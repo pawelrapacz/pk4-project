@@ -1,0 +1,9 @@
+.vscode/**
+.cache/**
+build/**
+debug/**
+docs/**
+external/**
+*/.gitignore
+*/CMakeLists.txt
+*/README.md

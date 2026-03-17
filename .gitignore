@@ -1,0 +1,15 @@
+.vs/
+.vscode/
+.cache/
+[Bb]in*/
+[Oo]ut*/
+[Bb]uild*/
+[Dd]ebug*/
+
+[Dd]ocs/*
+![Dd]ocs/[Dd]oxyfile
+
+*.out
+*.exe
+
+CMakeSettings.json
