@@ -7,7 +7,7 @@ set(PROJECT_AUTHOR "Paweł Rapacz")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(
-    CMAKE_CXX_STANDARD 20
+    CMAKE_CXX_STANDARD 23
     CMAKE_CXX_STANDARD_REQUIRED ON
     CMAKE_CXX_EXTENSIONS OFF
 )
@@ -42,13 +42,33 @@ endif()
 
 
 # Project Executable
-add_executable(${PROJECT_NAME} 
+add_executable(${PROJECT_NAME})
+
+# Module interfaces
+target_sources(${PROJECT_NAME}
+PRIVATE
+FILE_SET modules TYPE CXX_MODULES
+FILES
+    src/Application.cppm
+)
+
+
+# Sources
+target_sources(${PROJECT_NAME}
+PRIVATE
+    src/Application.cpp
     src/main.cpp
 )
-#set(raylib_VERBOSE 1)
+
+set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 target_compile_strict(${PROJECT_NAME})
+
+# modules support
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(${PROJECT_NAME} PUBLIC -fmodules)
+endif()
 
 # Web Configurations
 if (DEFINED PLATFORM AND PLATFORM STREQUAL "Web")
