@@ -3,6 +3,13 @@ project(battleships DESCRIPTION "pk4-project" LANGUAGES CXX)
 
 set(PROJECT_AUTHOR "Paweł Rapacz")
 
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+    message("---------------------------")
+    message("-- Using build type: Debug.")
+    message("---------------------------")
+endif()
+
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -64,11 +71,6 @@ set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 target_compile_strict(${PROJECT_NAME})
-
-# modules support
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(${PROJECT_NAME} PUBLIC -fmodules)
-endif()
 
 # Web Configurations
 if (DEFINED PLATFORM AND PLATFORM STREQUAL "Web")
