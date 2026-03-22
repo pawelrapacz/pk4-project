@@ -1,9 +1,21 @@
 # Project Executable
 add_executable(${PROJECT_NAME})
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
 # Sources
 target_sources(${PROJECT_NAME}
 PRIVATE
+    Graphics/Entity.h
+    Graphics/Entity.cpp
+    Interface/Button.h
+    Interface/Button.cpp
     Application.h
     Application.cpp
     main.cpp

@@ -1,10 +1,11 @@
 #pragma once
 
 namespace Battleships {
+
     struct ApplicationSpecs {
-        int width = 400;
-        int height = width / 16 * 9;
-        int scale = 3;
+        int width         = 400;
+        int height        = width / 16 * 9;
+        int scale         = 3;
         const char* title = "Battleships";
     };
 
@@ -19,4 +20,5 @@ namespace Battleships {
     private:
         ApplicationSpecs _specs;
     };
-} // Battleships
+
+}  // namespace Battleships

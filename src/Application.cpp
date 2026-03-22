@@ -1,7 +1,8 @@
-#include <raylib.h>
-#include <iostream>
-
 #include "Application.h"
+
+#include <raylib.h>
+
+#include <iostream>
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -10,11 +11,10 @@
 using namespace Battleships;
 
 Application::Application(const ApplicationSpecs& specs)
-    : _specs(specs) {
-    }
+    : _specs(specs) { }
 
 void Application::Run() {
-    std::clog << _specs.width <<std::endl << _specs.height << std::endl;
+    std::clog << _specs.width << std::endl << _specs.height << std::endl;
     InitWindow(_specs.width * _specs.scale, _specs.height * _specs.scale, _specs.title);
 
 #if defined(PLATFORM_WEB)
@@ -22,14 +22,13 @@ void Application::Run() {
 #else
     SetTargetFPS(60);
 
-    while(!WindowShouldClose()) {
+    while (!WindowShouldClose()) {
         UpdateDrawFrame();
     }
 #endif
 
     CloseWindow();
 }
-
 
 void Application::UpdateDrawFrame() {
     BeginDrawing();

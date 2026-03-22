@@ -1,9 +1,15 @@
+# Catalogues
 .vscode/**
 .cache/**
-build/**
-debug/**
-docs/**
+[Bb]in/**
+[Oo]ut/**
+[Bb]uild/**
+[Dd]ebug/**
+[Dd]ocs/**
+[Aa]ssets/**
 external/**
-*/.gitignore
-*/CMakeLists.txt
-*/README.md
+
+# Files
+**/.gitignore
+**/CMakeLists.txt
+**/README.md
