@@ -1,17 +1,17 @@
-module;
-
 #include <raylib.h>
 #include <iostream>
 
-module Application;
+#include "Application.h"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
 #endif
 
+using namespace Battleships;
 
 Application::Application(const ApplicationSpecs& specs)
-    : _specs(specs) { }
+    : _specs(specs) {
+    }
 
 void Application::Run() {
     std::clog << _specs.width <<std::endl << _specs.height << std::endl;

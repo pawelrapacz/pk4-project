@@ -1,6 +1,6 @@
-import Application;
+#include "Application.h"
 
 int main() {
-    Application game;
+    Battleships::Application game;
     game.Run();
 }
