@@ -16,6 +16,10 @@ PRIVATE
     Graphics/Entity.cpp
     Interface/Button.h
     Interface/Button.cpp
+    Player.h
+    Player.cpp
+    Game.h
+    Game.cpp
     Application.h
     Application.cpp
     main.cpp

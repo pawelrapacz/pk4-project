@@ -1,24 +1,30 @@
 #pragma once
 
+#include <memory>
+
+#include "Game.h"
+
 namespace Battleships {
 
-    struct ApplicationSpecs {
-        int width         = 400;
-        int height        = width / 16 * 9;
-        int scale         = 3;
-        const char* title = "Battleships";
+    struct ApplicationState {
+        bool gameRunning = false;
     };
 
     class Application {
     public:
-        Application(const ApplicationSpecs& specs = ApplicationSpecs());
+        Application() = default;
         ~Application() = default;
 
         void Run();
-        void UpdateDrawFrame();
+        
+    protected:
+        void Loop();
+        void OnUpdate();
+        void Draw() const;
 
     private:
-        ApplicationSpecs _specs;
+        ApplicationState _state;
+        std::unique_ptr<Game> _game;
     };
 
 }  // namespace Battleships

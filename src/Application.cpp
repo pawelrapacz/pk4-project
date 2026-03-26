@@ -1,8 +1,9 @@
-#include "Application.h"
-
 #include <raylib.h>
+#include <memory>
+#include "Game.h"
 
-#include <iostream>
+#include "Interface/Config.h"
+#include "Application.h"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -10,32 +11,37 @@
 
 using namespace Battleships;
 
-Application::Application(const ApplicationSpecs& specs)
-    : _specs(specs) { }
-
 void Application::Run() {
-    std::clog << _specs.width << std::endl << _specs.height << std::endl;
-    InitWindow(_specs.width * _specs.scale, _specs.height * _specs.scale, _specs.title);
-
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, TITLE);
+    _game = std::make_unique<Game>(Player(), Player());
 #if defined(PLATFORM_WEB)
-    emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
+    emscripten_set_main_loop(Loop(), 0, 1);
 #else
-    SetTargetFPS(60);
+    SetTargetFPS(30);
 
     while (!WindowShouldClose()) {
-        UpdateDrawFrame();
+        Loop();
     }
 #endif
 
     CloseWindow();
 }
 
-void Application::UpdateDrawFrame() {
+void Application::Loop() {
+    OnUpdate();
+    Draw();
+}
+
+void Application::OnUpdate() {
+    _game->OnUpdate();
+}
+
+void Application::Draw() const {
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
-
-    DrawText("Battleships!", 500, 300, 40, LIGHTGRAY);
+    DrawFPS(10, 10);
+    _game->Draw();
 
     EndDrawing();
 }
