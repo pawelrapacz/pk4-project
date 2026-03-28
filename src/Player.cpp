@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <random>
-#include <memory>
 #include <algorithm>
+#include <stdexcept>
 
 #include "Player.h"
 #include "Game.h"
@@ -9,9 +9,8 @@
 
 using namespace Battleships;
 
-// Player::Player() {
-//     _grid = GenerateGrid();
-// }
+Player::Player()
+    : _grid(GenerateGrid()) { }
 
 Player::Player(const Grid& grid)
     : _grid(grid) { }
@@ -44,71 +43,96 @@ const Player::Grid& Player::GetGrid() const noexcept {
 }
 
 
-// Player::Grid Player::GenerateGrid() {
-//     static std::mt19937 mt(std::random_device{}());
-//     static std::uniform_int_distribution<std::size_t> dist(0z, GRID_SIZE);
-    
-//     Grid grid { };
-//     auto remaining = Rules::MAX_HITS;
 
-//     while (remaining)
-//         if (TryAddingShip(grid, dist(mt), dist(mt)))
-//             remaining--;
+// #################  FOR Player::GenerateGrid  #################
 
-//     return grid;
-// }
+// for the use of functions below Square::Hit will be treated
+//  as a reserved position (margin between ships)
+// Square::Missed will remain unused
 
-// inline static bool HasCornerNeighbours(const Player::Grid& grid, std::size_t x, std::size_t y) {
-//     // top left
-//     if ()
-// }
+// normalizes the value to be in bounds of grid
+static inline auto nmlz(std::size_t val) {
+    if (val < GRID_SIZE)
+        return val;
+    else
+        return 0uz;
+};
 
-// bool Player::TryAddingShip(Player::Grid& grid, std::size_t x, std::size_t y) {
-//     // checks for 
-//     for (std::size_t i = std::clamp(x - 1, 0uz, 10uz); i < std::min(x+3z, GRID_SIZE); i+=2) {
-//         for (std::size_t j = std::clamp(y - 1, 0uz, 10uz); j < std::min(y+3z,GRID_SIZE); j+=2) {
-//             if (grid[i][j] == Square::Ship)
-//                 return false;
-//         }
-//     }
+static void RandomInsertShip(Player::Grid& grid, std::size_t size) {
+    static std::mt19937 mt(std::random_device{}());
+    static std::uniform_int_distribution dir(0,1); // orientation/direction
 
+    // unocnstrained
+    static std::uniform_int_distribution<std::size_t> dist(0z, GRID_SIZE - 1);
 
-//     std::array<std::array<std::shared_ptr<uint8_t>, GRID_SIZE>, GRID_SIZE> groups { };
-//     std::array<uint8_t, 4> shipCount { };
+    // constrained becoause of size
+    std::uniform_int_distribution<std::size_t> cdist(0z, GRID_SIZE - size);
 
-//     for (std::size_t i = 0; i < GRID_SIZE; i++) {
-//         for (std::size_t j = 0; j < GRID_SIZE; j++) {
-//             if (grid[i][j] != Square::Ship) continue;
+    uint32_t hits {};
+    std::size_t x, y, mainCoord;
+    int ort;
+    bool foundCoor = false;
 
-//             if (i > 0 && groups[i - 1][j])
-//                 groups[i][j] = groups[i - 1][j];
-//             else if (j > 0 && groups[i][j - 1])
-//                 groups[i][j] = groups[i][j - 1];
-//             else
-//                 groups[i][j] = std::make_shared<uint8_t>();
+    while (!foundCoor) {
+        foundCoor = true;
+        ort = dir(mt);
 
-//             shipCount[*groups[i][j]-1]--;
-//             shipCount[*groups[i][j]]++;
-//             (*groups[i][j])++;
-//         }
-//     }
+        if (ort) { // horizontal
+            mainCoord = x = cdist(mt);
+            y = dist(mt);
+        } else { // vertical
+            x = dist(mt);
+            mainCoord = y = cdist(mt);
+        }   
 
+        // checking if collides with other ships
+        for (auto i = mainCoord; i < mainCoord + size; i++)
+            if ((ort && grid[i][y] != Square::None) || (!ort && grid[x][i] != Square::None))
+                foundCoor = false;
 
+        if(++hits > 100u) // unlikely
+            throw std::runtime_error("Generating game Grid failed.");
+    }
 
-//     uint8_t nbrCountNew { };
-//     std::shared_ptr<uint8_t> groupNew;
-//     for (std::size_t i = std::clamp(x - 1, 0uz, 10uz); i < std::min(x+3z, GRID_SIZE); i++) {
-//         for (std::size_t j = std::clamp(y - 1, 0uz, 10uz); j < std::min(y+3z,GRID_SIZE); j++) {
-//             if (i != x && j != y && grid[i][j] == Square::Ship) {
-//                 nbrCountNew++;
-//                 groupNew = groups[i][j];
-//             }
-//         }
-//     }
+    // sets margins, std::min fixes potential overflow
+    if (ort) {
+        for (auto i = nmlz(x - 1); i < std::min(GRID_SIZE, x + size + 1); i++)
+            for (auto j= nmlz(y - 1); j < std::min(GRID_SIZE, y + 2); j++)
+                grid[i][j] = Square::Hit;
+    } else {
+        for (auto i = nmlz(x - 1); i < std::min(GRID_SIZE, x + 2); i++)
+            for (auto j= nmlz(y - 1); j < std::min(GRID_SIZE, y + size + 1); j++)
+                grid[i][j] = Square::Hit;
+    }
 
-//     if (nbrCountNew == 0 && shipCount[0] < Rules::DESTROYER_COUNT) {
-//         return true;
-//     }
+    // insert ship
+    for (auto i = mainCoord; i < mainCoord + size; i++) {
+        if (ort)
+            grid[i][y] = Square::Ship; 
+        else
+            grid[x][i] = Square::Ship; 
+    }   
+}
 
-//     if (nbrCountNew == 1 && )
-// }
+Player::Grid Player::GenerateGrid() {
+    Grid grid { };
+
+    RandomInsertShip(grid, 4);
+    RandomInsertShip(grid, 3);
+    RandomInsertShip(grid, 3);
+    RandomInsertShip(grid, 2);
+    RandomInsertShip(grid, 2);
+    RandomInsertShip(grid, 2);
+    RandomInsertShip(grid, 1);
+    RandomInsertShip(grid, 1);
+    RandomInsertShip(grid, 1);
+    RandomInsertShip(grid, 1);
+
+    // erase Square::Hit (margins)
+    for (std::size_t i {}; i < GRID_SIZE; i++)
+        for (std::size_t j {}; j < GRID_SIZE; j++)
+            if (grid[i][j] == Square::Hit)
+                grid[i][j] = Square::None;
+
+    return grid;
+}

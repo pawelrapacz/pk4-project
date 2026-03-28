@@ -24,7 +24,7 @@ namespace Battleships {
         using Grid = std::array<std::array<Square, GRID_SIZE>, GRID_SIZE>;
 
     public:
-        Player() = default;
+        Player();
         Player(const Grid&);
         
         bool Hit(std::size_t x, std::size_t y) noexcept;
@@ -32,8 +32,7 @@ namespace Battleships {
         uint32_t GetHits() const noexcept;
         bool HasLost() const noexcept;
         
-        // Grid static GenerateGrid();
-        // bool static TryAddingShip(Grid& grid, std::size_t x, std::size_t y);
+        Grid static GenerateGrid();
 
     private:
         Grid _grid;
