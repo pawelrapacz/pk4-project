@@ -30,6 +30,8 @@ endfunction()
 # Dependencies
 add_subdirectory(external)
 
+add_subdirectory(lib/logging)
+
 # Raylib
 set(RAYLIB_VERSION 5.5)
 find_package(raylib ${RAYLIB_VERSION} QUIET) # QUIET or REQUIRED
