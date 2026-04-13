@@ -1,5 +1,7 @@
 #pragma once
 
+#include <format>
+#include <iostream>
 #include <string_view>
 
 #include "styles.h"
@@ -7,14 +9,14 @@
 namespace logging {
 
     enum LogLevel {
-        INFO,
         DEBUG,
-        WARNING,
+        INFO,
+        WARN,
         ERROR,
-        CRITICAL,
+        FATAL,
     };
 
-    void Log(LogLevel, std::string_view);
+    void Log(LogLevel lv, std::string_view msg, std::ostream& outstr = std::clog);
 
 }
 
@@ -23,15 +25,20 @@ namespace logging {
     using namespace logging;
 #endif
 
-
 #ifndef DISABLE_LOGGING
-    #define LOG(level, text) logging::Log(level, text)
+    #define LOG(level, fmt, ...) logging::Log(level, std::format(fmt __VA_OPT__(,) __VA_ARGS__))
 #else
-    #define LOG(text)
+    #define LOG(...)
 #endif
 
-#define DEBUG(text) LOG(logging::LogLevel::DEBUG, text)
-#define INFO(text) LOG(logging::LogLevel::INFO, text)
-#define WARNING(text) LOG(logging::LogLevel::WARNING, text)
-#define ERROR(text) LOG(logging::LogLevel::ERROR, text)
-#define CRITICAL(text) LOG(logging::LogLevel::CRITICAL, text)
+#if defined(_DEBUG) || !defined(NDEBUG) || defined(LOGGING_FORCE_USE_DEBUG)
+    #define DEBUG(fmt, ...) LOG(logging::LogLevel::DEBUG, "{}:{} {}", __FILE__, __LINE__, std::format(fmt __VA_OPT__(,) __VA_ARGS__))
+#else
+    #define DEBUG(...)
+#endif
+
+
+#define INFO(fmt, ...) LOG(logging::LogLevel::INFO, fmt __VA_OPT__(,) __VA_ARGS__)
+#define WARN(fmt, ...) LOG(logging::LogLevel::WARN, fmt __VA_OPT__(,) __VA_ARGS__)
+#define ERROR(fmt, ...) LOG(logging::LogLevel::ERROR, fmt __VA_OPT__(,) __VA_ARGS__)
+#define FATAL(fmt, ...) LOG(logging::LogLevel::FATAL, fmt __VA_OPT__(,) __VA_ARGS__)

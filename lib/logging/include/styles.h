@@ -40,7 +40,7 @@ namespace logging {
     });
 
     enum ANSIColor : std::uint32_t {
-        NONE,
+        NONE_ANSI_CLR,
 
         // Foreground (font) color
         FG_RESET,
@@ -83,6 +83,7 @@ namespace logging {
 
     constexpr auto COLORS_TABLE = std::to_array<std::string_view>({
         "",
+
         // Foreground (font) color
         ANSI_CSI "39m",  // FG_RESET
         ANSI_CSI "30m",  // FG_BLACK
