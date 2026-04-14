@@ -5,5 +5,5 @@ add_executable(logging-tests
 )
 
 target_link_libraries(logging-tests doctest logging)
-# target_compile_strict(logging-tests) # currently doctest fails
+target_compile_strict(logging-tests)
 add_test(NAME LoggingTest COMMAND logging-tests)
