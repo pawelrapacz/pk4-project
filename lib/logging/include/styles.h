@@ -9,12 +9,12 @@
 
 
 #define ANSI_ESC "\x1b"
-
 #define ANSI_CSI ANSI_ESC "["
 
 namespace logging {
+namespace styles {
 
-    enum ANSITextStyle : std::uint32_t {
+    enum text_style : std::uint32_t {
         BOLD = 1 << 0,
         FAINT = 1 << 1,
         ITALIC = 1 << 2,
@@ -24,22 +24,22 @@ namespace logging {
         OVERLINE = 1 << 6,
     };
 
-    struct ANSITextEntry {
-        ANSITextStyle key;
+    struct text_style_entry {
+        text_style key;
         std::string_view seq;
     };
 
-    constexpr auto TEXT_STYLE_MAP = std::to_array<ANSITextEntry>({
-        {ANSITextStyle::BOLD, ANSI_CSI "1m"},
-        {ANSITextStyle::FAINT, ANSI_CSI "2m"},
-        {ANSITextStyle::ITALIC, ANSI_CSI "3m"},
-        {ANSITextStyle::UNDERLINE, ANSI_CSI "4m"},
-        {ANSITextStyle::LINE_THROUGH, ANSI_CSI "9m"},
-        {ANSITextStyle::DOUBLE_UNDERLINE, ANSI_CSI "21m"},
-        {ANSITextStyle::OVERLINE, ANSI_CSI "53m"},
+    constexpr auto TEXT_STYLE_MAP = std::to_array<text_style_entry>({
+        {text_style::BOLD, ANSI_CSI "1m"},
+        {text_style::FAINT, ANSI_CSI "2m"},
+        {text_style::ITALIC, ANSI_CSI "3m"},
+        {text_style::UNDERLINE, ANSI_CSI "4m"},
+        {text_style::LINE_THROUGH, ANSI_CSI "9m"},
+        {text_style::DOUBLE_UNDERLINE, ANSI_CSI "21m"},
+        {text_style::OVERLINE, ANSI_CSI "53m"},
     });
 
-    enum ANSIColor : std::uint32_t {
+    enum color : std::uint32_t {
         NONE_ANSI_CLR,
 
         // Foreground (font) color
@@ -124,82 +124,118 @@ namespace logging {
     });
 
 
-    constexpr std::string_view to_ansi(ANSITextStyle code) noexcept {
+    inline constexpr std::string_view to_ansi(text_style code) noexcept {
         switch (code) {
-            case ANSITextStyle::BOLD: return ANSI_CSI "1m";
-            case ANSITextStyle::FAINT: return ANSI_CSI "2m";
-            case ANSITextStyle::ITALIC: return ANSI_CSI "3m";
-            case ANSITextStyle::UNDERLINE: return ANSI_CSI "4m";
-            case ANSITextStyle::LINE_THROUGH: return ANSI_CSI "9m";
-            case ANSITextStyle::DOUBLE_UNDERLINE: return ANSI_CSI "21m";
-            case ANSITextStyle::OVERLINE: return ANSI_CSI "53m";
+            case text_style::BOLD: return ANSI_CSI "1m";
+            case text_style::FAINT: return ANSI_CSI "2m";
+            case text_style::ITALIC: return ANSI_CSI "3m";
+            case text_style::UNDERLINE: return ANSI_CSI "4m";
+            case text_style::LINE_THROUGH: return ANSI_CSI "9m";
+            case text_style::DOUBLE_UNDERLINE: return ANSI_CSI "21m";
+            case text_style::OVERLINE: return ANSI_CSI "53m";
             default: return {};
         }
     }
 
-    constexpr std::string_view to_ansi(ANSIColor clrCode) noexcept {
+    inline constexpr std::string_view to_ansi(color clrCode) noexcept {
         return COLORS_TABLE[static_cast<std::size_t>(clrCode)];
     }
 
 
-    struct CLIStyle {
-        ANSITextStyle text { };
-        ANSIColor fg { };
-        ANSIColor bg { };
+    struct style {
+        text_style text { };
+        color fg { };
+        color bg { };
 
-        constexpr CLIStyle() = default;
+        constexpr style() = default;
 
-        constexpr CLIStyle(ANSITextStyle code) noexcept
+        inline constexpr style(text_style code) noexcept
             : text(code) { }
 
-        constexpr CLIStyle(ANSIColor code) noexcept {
-            impl_set_appropriate_color(code);
+        inline constexpr style(color code) noexcept {
+            set_color_(code);
         }
 
 
-        constexpr inline void impl_set_appropriate_color(ANSIColor clrCode) noexcept {
-            if (clrCode < ANSIColor::BG_RESET)
+        inline constexpr void set_color_(color clrCode) noexcept {
+            if (clrCode < color::BG_RESET)
                 fg = clrCode;
             else
                 bg = clrCode;
         }
     };
 
-    constexpr CLIStyle operator|(ANSITextStyle code1, ANSITextStyle code2) noexcept {
-        return {static_cast<ANSITextStyle>(
+    inline constexpr style operator|(text_style code1, text_style code2) noexcept {
+        return {static_cast<text_style>(
             std::to_underlying(code1) | std::to_underlying(code2)
         )};
     }
 
-    constexpr CLIStyle operator|(ANSIColor clrCode, ANSITextStyle txtCode) noexcept {
-        CLIStyle style;
-        style.text = txtCode;
-        style.impl_set_appropriate_color(clrCode);
+    inline constexpr style operator|(color clr1, color clr2) noexcept {
+        style style;
+        style.set_color_(clr1);
+        style.set_color_(clr2);
         return style;
     }
 
-    constexpr CLIStyle operator|(ANSITextStyle txtCode, ANSIColor clrCode) noexcept {
+    inline constexpr style operator|(color clrCode, text_style txtCode) noexcept {
+        style style;
+        style.text = txtCode;
+        style.set_color_(clrCode);
+        return style;
+    }
+
+    inline constexpr style operator|(text_style txtCode, color clrCode) noexcept {
         return operator|(clrCode, txtCode);
     }
 
-    constexpr CLIStyle operator|(const CLIStyle& style, ANSITextStyle txtCode) noexcept {
-        CLIStyle newStyle = style;
-        newStyle.text = static_cast<ANSITextStyle>(
-            std::to_underlying(style.text) | std::to_underlying(txtCode)
+    inline constexpr style operator|(const style& othStyle, text_style txtCode) noexcept {
+        style newStyle = othStyle;
+        newStyle.text = static_cast<text_style>(
+            std::to_underlying(othStyle.text) | std::to_underlying(txtCode)
         );
         return newStyle;
     }
 
-    constexpr CLIStyle operator|(const CLIStyle& style, ANSIColor clrCode) noexcept {
-        CLIStyle newStyle = style;
-        newStyle.impl_set_appropriate_color(clrCode);
+    inline constexpr style operator|(const style& othStyle, color clrCode) noexcept {
+        style newStyle = othStyle;
+        newStyle.set_color_(clrCode);
         return newStyle;
     }
 
-    void ResetStyle(std::ostream& outstr = std::cout);
 
-    void ApplyStyle(const CLIStyle& style, std::ostream& outstr = std::cout);
+    consteval std::string_view reset_seq() {
+        return ANSI_CSI "0m";
+    }
 
-    std::string StyleSequence(const CLIStyle& style);
+    inline void reset(std::ostream& outstr = std::cout) {
+        outstr << reset_seq();
+    }
 
-}
+
+    inline std::string apply_seq(const style& style) {
+        std::string seq;
+
+        seq += to_ansi(style.fg);
+        seq += to_ansi(style.bg);
+
+        for (auto& i : TEXT_STYLE_MAP) {
+            if (std::to_underlying(i.key) & std::to_underlying(style.text))
+                seq += i.seq;
+        }
+
+        return seq;
+    }
+
+    inline void apply(const style& style, std::ostream& outstr = std::cout) {
+        outstr << to_ansi(style.fg);
+        outstr << to_ansi(style.bg);
+
+        for (auto& i : TEXT_STYLE_MAP) {
+            if (std::to_underlying(i.key) & std::to_underlying(style.text))
+                outstr << i.seq;
+        }
+    }
+
+}   // namespace styles
+}   // namespace logging
