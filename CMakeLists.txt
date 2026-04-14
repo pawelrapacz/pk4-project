@@ -10,6 +10,8 @@ if (NOT CMAKE_BUILD_TYPE)
     message("---------------------------")
 endif()
 
+enable_testing()
+
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -53,5 +55,4 @@ endif()
 add_subdirectory(src)
 
 # Tests
-enable_testing()
 add_subdirectory(tests)
