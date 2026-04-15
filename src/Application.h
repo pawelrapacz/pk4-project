@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
-
 #include "Game.h"
+
+#include <memory>
 
 namespace Battleships {
 

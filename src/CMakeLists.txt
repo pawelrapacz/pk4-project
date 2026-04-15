@@ -18,6 +18,8 @@ PRIVATE
     Interface/Button.cpp
     Player.h
     Player.cpp
+    Enemy.h
+    Enemy.cpp
     Game.h
     Game.cpp
     Application.h

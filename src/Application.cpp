@@ -1,9 +1,9 @@
-#include <raylib.h>
-#include <memory>
-#include "Game.h"
-
-#include "Interface/Config.h"
 #include "Application.h"
+#include "Interface/Config.h"
+
+#include <raylib.h>
+#include <logging/logging.h>
+
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -12,8 +12,11 @@
 using namespace Battleships;
 
 void Application::Run() {
+    logging::info("Initializing App");
+
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, TITLE);
-    _game = std::make_unique<Game>(Player(), Player());
+    _game = std::make_unique<Game>(Player());
+
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(Loop(), 0, 1);
 #else
@@ -24,6 +27,7 @@ void Application::Run() {
     }
 #endif
 
+    logging::info("Closing App");
     CloseWindow();
 }
 

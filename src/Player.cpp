@@ -1,13 +1,23 @@
-#include <cstdint>
+#include "Interface/Config.h"
+#include "Player.h"
+
+#include <logging/logging.h>
+
 #include <random>
 #include <algorithm>
 #include <stdexcept>
 
-#include "Player.h"
-#include "Game.h"
-#include "Interface/Config.h"
-
 using namespace Battleships;
+
+
+Player::Grid Player::RemoveShips(const Player::Grid& grid) noexcept {
+    Grid newGrid = grid;
+    for (uint32_t i = 0; i < GRID_SIZE; i++)
+        for (uint32_t j = 0; j < GRID_SIZE; j++)
+            if (newGrid[i][j] == Square::Ship)
+                newGrid[i][j] = Square::None;
+    return newGrid;
+}
 
 Player::Player()
     : _grid(GenerateGrid()) { }
@@ -15,19 +25,26 @@ Player::Player()
 Player::Player(const Grid& grid)
     : _grid(grid) { }
 
-bool Player::Hit(std::size_t x, std::size_t y) noexcept {
+bool Player::Attack(uint32_t x, uint32_t y) noexcept {
     switch (_grid[x][y]) {
         case Square::None:
             _grid[x][y] = Square::Missed;
+            logging::info("Hit {}{}, missed!", char(y + 'a'), x);
             break;
         case Square::Ship:
             _grid[x][y] = Square::Hit;
             _hits++;
+            logging::info("Hit {}{}, successful!", char(y + 'a'), x);
             break;
         default:
+            logging::info("Hit {}{}, is invalid, that position has been already hit!", char(y + 'a'), x);
             return false;
     }
     return true;
+}
+
+bool Player::Attack(Pos pos) noexcept {
+    return Attack(pos.x, pos.y);
 }
 
 uint32_t Player::GetHits() const noexcept {
@@ -41,7 +58,6 @@ bool Player::HasLost() const noexcept {
 const Player::Grid& Player::GetGrid() const noexcept {
     return _grid;
 }
-
 
 
 // #################  FOR Player::GenerateGrid  #################
@@ -115,6 +131,7 @@ static void RandomInsertShip(Player::Grid& grid, std::size_t size) {
 }
 
 Player::Grid Player::GenerateGrid() {
+    logging::info("Generating Grid");
     Grid grid { };
 
     RandomInsertShip(grid, 4);
