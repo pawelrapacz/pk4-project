@@ -1,10 +1,10 @@
+#define LOGGING_NO_COLORS
+#include <logging/logging.h>
+
 #include <doctest/doctest.h>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
-
-#define LOGGING_NO_COLORS
-#include "logging.h"
 
 
 #define INITIALIZE()    logging::log_specs_ = {};\

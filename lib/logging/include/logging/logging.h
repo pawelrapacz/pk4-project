@@ -1,5 +1,8 @@
 #pragma once
 
+#include <logging/styles.h>
+
+#include <array>
 #include <iostream>
 #include <format>
 #include <filesystem>
@@ -9,8 +12,6 @@
 #include <string>
 #include <string_view>
 #include <utility>
-
-#include "styles.h"
 
 
 #if !defined(NDEBUG) || defined(_DEBUG) || defined(LOGGING_ALWAYS_USE_DEBUG)

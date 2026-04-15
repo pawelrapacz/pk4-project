@@ -1,7 +1,8 @@
+#include <logging/styles.h>
+
 #include <doctest/doctest.h>
 #include <sstream>
 
-#include "styles.h"
 
 using namespace logging::styles;
 
