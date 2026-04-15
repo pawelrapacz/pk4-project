@@ -14,6 +14,12 @@
 #include <utility>
 
 
+// configuration macros:
+// LOGGING_DISABLE
+// LOGGING_NO_COLORS
+// LOGGING_ALWAYS_USE_DEBUG
+
+
 #if !defined(NDEBUG) || defined(_DEBUG) || defined(LOGGING_ALWAYS_USE_DEBUG)
     #define LOGGING_USE_DEBUG_
 #endif
@@ -127,6 +133,8 @@ namespace logging {
     }
 
 
+#ifndef LOGGING_DISABLE
+
     template<typename Tp>
     inline void log(level lvl, const Tp& msg) {
         // omit logs below the desired level
@@ -199,5 +207,46 @@ namespace logging {
     inline void fatal(std::format_string<Args...> fmt, Args&&... args) {
         log(level::fatal, fmt, std::forward<Args>(args)...);
     }
+
+#else // LOGGING_DISABLE
+
+    template<typename Tp>
+    inline void log(level, const Tp&) { }
+
+    template<typename Tp>
+    inline void debug(const Tp&) { }
+
+    template<typename Tp>
+    inline void info(const Tp&) { }
+
+    template<typename Tp>
+    inline void warn(const Tp&) { }
+
+    template<typename Tp>
+    inline void error(const Tp&) { }
+
+    template<typename Tp>
+    inline void fatal(const Tp&) { }
+
+
+    template<typename... Args>
+    inline void log(level, std::format_string<Args...>, Args&&...) { }
+
+    template<typename... Args>
+    inline void debug(std::format_string<Args...>, Args&&...) { }
+    
+    template<typename... Args>
+    inline void info(std::format_string<Args...>, Args&&...) { }
+
+    template<typename... Args>
+    inline void warn(std::format_string<Args...>, Args&&...) { }
+
+    template<typename... Args>
+    inline void error(std::format_string<Args...>, Args&&...) { }
+
+    template<typename... Args>
+    inline void fatal(std::format_string<Args...>, Args&&...) { }
+
+#endif // LOGGING_DISABLE
 
 } // logging
