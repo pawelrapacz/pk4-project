@@ -3,6 +3,7 @@
 #include <logging/styles.h>
 
 #include <array>
+#include <cassert>
 #include <iostream>
 #include <format>
 #include <filesystem>
@@ -37,38 +38,20 @@ namespace logging {
 
     inline auto& default_stream = std::clog;
 
-    inline struct {
-        level level = level::debug;
+    struct specs_ {
+        level logLevel = level::debug;
         bool toFile = false;
         bool toStdout = true;
-        std::ostream* stream = &std::clog;
+        std::ostream* stream = &default_stream;
         std::filesystem::path path = "logs/program.log";
 
-    protected:
+    private:
         std::ofstream file;
         friend inline std::ofstream& get_log_file_() noexcept;
-    } log_specs_;
+    };
 
+    inline specs_ log_specs_{};
 
-    inline void set_level(level lvl) noexcept {
-        log_specs_.level = lvl;
-    }
-
-    inline void to_file(bool tof = true) noexcept {
-        log_specs_.toFile = tof;
-    }
-
-    inline void to_stdout(bool tos = true) noexcept {
-        log_specs_.toStdout = tos;
-    }
-
-    inline void set_file(const std::filesystem::path& path) {
-        log_specs_.path = path;
-    }
-
-    inline void set_stdout(std::ostream& stream) {
-        log_specs_.stream = &stream;
-    }
 
     inline std::ostream& get_log_stream_() noexcept {
         return *log_specs_.stream;
@@ -133,12 +116,34 @@ namespace logging {
     }
 
 
+    inline void set_level(level lvl) noexcept {
+        log_specs_.logLevel = lvl;
+    }
+
+    inline void set_file(const std::filesystem::path& path) {
+        assert(!get_log_file_().is_open() && "The file can not be changed after it has been opend (after the first log)");
+        log_specs_.path = path;
+    }
+
+    inline void set_stdout(std::ostream& stream) {
+        log_specs_.stream = &stream;
+    }
+
+    inline void to_file(bool tof = true) noexcept {
+        log_specs_.toFile = tof;
+    }
+
+    inline void to_stdout(bool tos = true) noexcept {
+        log_specs_.toStdout = tos;
+    } 
+
+
 #ifndef LOGGING_DISABLE
 
     template<typename Tp>
     inline void log(level lvl, const Tp& msg) {
         // omit logs below the desired level
-        if (lvl < log_specs_.level) return;
+        if (lvl < log_specs_.logLevel) return;
 
         std::string logMsg = create_log_message_(lvl, msg);
 
@@ -234,7 +239,7 @@ namespace logging {
 
     template<typename... Args>
     inline void debug(std::format_string<Args...>, Args&&...) { }
-    
+
     template<typename... Args>
     inline void info(std::format_string<Args...>, Args&&...) { }
 
