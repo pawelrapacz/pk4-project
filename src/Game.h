@@ -26,7 +26,7 @@ namespace Battleships {
         uint32_t GetTurn() const noexcept;
     
     private:
-        void PlayerTurn(uint32_t, uint32_t) noexcept;
+        void PlayerTurn(std::size_t, std::size_t) noexcept;
         void EnemyTurn() noexcept;
 
     private:

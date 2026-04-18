@@ -9,6 +9,7 @@
 [Dd]ocs/*
 ![Dd]ocs/[Dd]oxyfile
 
+*.log
 *.out
 *.exe
 

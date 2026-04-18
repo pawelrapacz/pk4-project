@@ -48,23 +48,23 @@ inline void DrawGridLabels(int x, int y, float size = GRID_SQUARE_WIDTH) {
         rec.x = x + size + i*size;
         rec.y = y;
         auto textPosXH = (size - MeasureText(LABEL_H[i], FONT_SIZE))/2;
-        DrawRectangleRec(rec, Color(100,100,255,255));
-        DrawRectangleLinesEx(rec, 1, WHITE);
-        DrawText(LABEL_H[i], rec.x+textPosXH, rec.y+textPosY, FONT_SIZE, WHITE);
+        DrawRectangleRec(rec, Colors::blue);
+        DrawRectangleLinesEx(rec, 1, Colors::white);
+        DrawText(LABEL_H[i], rec.x+textPosXH, rec.y+textPosY, FONT_SIZE, Colors::white);
         
         // Vertial Labels
         rec.x = x;
-        rec.y = y+size+i*size;        
+        rec.y = y+size+i*size;
         auto textPosXV = (size - MeasureText(LABEL_V[i], FONT_SIZE))/2;
-        DrawRectangleRec(rec, Color(100,100,255,255));
-        DrawRectangleLinesEx(rec, 1, WHITE);
-        DrawText(LABEL_V[i], rec.x+textPosXV, rec.y+textPosY, FONT_SIZE, WHITE);
+        DrawRectangleRec(rec, Colors::blue);
+        DrawRectangleLinesEx(rec, 1, Colors::white);
+        DrawText(LABEL_V[i], rec.x+textPosXV, rec.y+textPosY, FONT_SIZE, Colors::white);
     }
 }
 
 inline void DrawGrid(int x, int y, const char* label, const Player::Grid& grid, float size = GRID_SQUARE_WIDTH, float sqRatio = 0.7f) {
     int labelPos = x+(11*size-MeasureText(label, FONT_SIZE_H3))/2;
-    DrawText(label, labelPos, y, FONT_SIZE_H3, GRAY);
+    DrawText(label, labelPos, y, FONT_SIZE_H3, Colors::text);
     y+=OFFSET_H3;
 
     DrawGridLabels(x, y, size);
@@ -79,18 +79,18 @@ inline void DrawGrid(int x, int y, const char* label, const Player::Grid& grid, 
         for (std::size_t j = 0; j < GRID_SIZE; j++) {
             Rectangle outer {i*size+x, j*size+y, size, size};
             DrawRectangleRec(outer, Color(210,210,230,255));
-            DrawRectangleLinesEx(outer, 1.3f, WHITE);
+            DrawRectangleLinesEx(outer, 1.3f, Colors::white);
 
             Rectangle inner {x+i*size+elOffset, y+j*size+elOffset, elSize, elSize};
             switch (grid[i][j]) {
                 case Square::Ship:
-                    DrawRectangleRec(inner, GRAY);
+                    DrawRectangleRec(inner, Colors::gray);
                     break;
                 case Square::Hit:
-                    DrawRectangleRec(inner, RED);
+                    DrawRectangleRec(inner, Colors::red);
                     break;
                 case Square::Missed:
-                    DrawRectangleRec(inner, BLUE);
+                    DrawRectangleRec(inner, Colors::lightblue);
                     break;
                 default:
                     break;
@@ -104,22 +104,22 @@ static void DrawGameOver(const char* label) {
     int posX = (WINDOW_WIDTH - MeasureText(over, FONT_SIZE_H1)) / 2;
     int posY = (WINDOW_HEIGHT - FONT_SIZE_H1 * 2 - MARGIN_H1) / 2;
 
-    Rectangle rec {(float)posX - MARGIN_H1, (float)posY - MARGIN_H1, (float)MeasureText(over, FONT_SIZE_H1) + MARGIN_H1 * 2, OFFSET_H1 * 2 + MARGIN_H1};
-    DrawRectangleRec(rec, RAYWHITE);
-    DrawRectangleLinesEx(rec, 5, Color(100,100,255,255));
+    Rectangle rec {0, (float)posY - MARGIN_H1, WINDOW_WIDTH, OFFSET_H1 * 2 + MARGIN_H1};
+    DrawRectangleRec(rec, Colors::white_t);
+    // DrawRectangleLinesEx(rec, 5, Colors::blue);
 
-    DrawText(over, posX, posY, FONT_SIZE_H1, GRAY);
+    DrawText(over, posX, posY, FONT_SIZE_H1, Colors::text);
 
     posX = (WINDOW_WIDTH - MeasureText(label, FONT_SIZE_H1)) / 2;
     posY += OFFSET_H1;
-    DrawText(label, posX, posY, FONT_SIZE_H1, GRAY);
+    DrawText(label, posX, posY, FONT_SIZE_H1, Colors::text);
 }
 
 
 void Game::Draw() const {
-    DrawGrid(50, 50, "You", _plr.GetGrid());
-    DrawGrid(600, 50, "Enemy", Player::RemoveShips(_enm->GetGrid()));
-
+    DrawGrid(50, 50, "Your fleet", _plr.GetGrid());
+    DrawGrid(600, 50, "Enemy fleet", Player::RemoveShips(_enm->GetGrid()));
+    
     switch (_state) {
         case State::PlayerWon:
             DrawGameOver("You win");
@@ -129,20 +129,10 @@ void Game::Draw() const {
             break;
         default: break;
     }
-
-    
-    // if (GetTurn()) {
-    //     constexpr auto text = "Enemy's attacking you!";
-    //     int posX = (WINDOW_WIDTH - MeasureText(text, FONT_SIZE_H2)) / 2;
-    //     int posY = (WINDOW_HEIGHT - FONT_SIZE_H2) / 2;
-    //     DrawText(text, posX, posY, FONT_SIZE_H2, GRAY);
-    // }
-    // else {
-    // }
 }
 
 
-void Game::PlayerTurn(uint32_t x, uint32_t y) noexcept {
+void Game::PlayerTurn(std::size_t x, std::size_t y) noexcept {
     if (_enm->Attack(x, y))
         _turn++;
 

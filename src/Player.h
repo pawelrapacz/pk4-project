@@ -4,67 +4,64 @@
 
 #include <array>
 #include <cstdint>
+#include <memory>
 
 namespace Battleships {
-
-    /// \brief Contanins rules for arranging ships by the player
-    namespace Rules {
-        /// \defgroup ShipRules Ship Rules
-        /// \brief Sets the rules for using and creating ships
-        ///
-        /// *_SIZE refers to the size of the Ship (in \ref Square Squares)\n
-        /// *_COUNT is the number of ships given to the player at the start
-        /// \see Square GameGrid PlayerBoard
-        /// \{
-        constexpr uint32_t CARRIER_SIZE = 4u;
-        constexpr uint32_t BATTLESHIP_SIZE = 3u;
-        constexpr uint32_t CRUSIER_SIZE = 2u;
-        constexpr uint32_t DESTROYER_SIZE = 1u;
-
-        constexpr uint32_t CARRIER_COUNT = 1u;
-        constexpr uint32_t BATTLESHIP_COUNT = 2u;
-        constexpr uint32_t CRUSIER_COUNT = 3u;
-        constexpr uint32_t DESTROYER_COUNT = 4u;
-        /// \}
-
-        constexpr uint32_t MAX_HITS = CARRIER_SIZE * CARRIER_COUNT + BATTLESHIP_SIZE * BATTLESHIP_COUNT + CRUSIER_SIZE * CRUSIER_COUNT + DESTROYER_SIZE * DESTROYER_COUNT;
-    }
-
+    
     /// \enum Square
-    /// \brief Represents a square on Players Grid
-    /// \see GameGrid
+    /// \brief Represents a square on Player Grid
+    /// \see Player::Grid
     enum class Square : uint8_t {
         None,
         Ship,
         Hit,
         Missed,
     };
-
+    
     class Player {
     public:
+        using ShipSize = uint32_t;
+
+        struct Pos { std::size_t x, y; };
+
         /// \brief Represents a game board, for marking shots, ships etc.
         /// \see Square
         using Grid = std::array<std::array<Square, GRID_SIZE>, GRID_SIZE>;
 
-        struct Pos { uint32_t x, y; };
-    
     public:
-        static Grid GenerateGrid();
         static Grid RemoveShips(const Grid&) noexcept;
-
-    public:
+    
         Player();
         Player(const Grid&);
         virtual ~Player() = default;
         
         bool Attack(Pos) noexcept;
-        bool Attack(uint32_t x, uint32_t y) noexcept;
+        bool Attack(std::size_t x, std::size_t y) noexcept;
         const Grid& GetGrid() const noexcept;
         uint32_t GetHits() const noexcept;
         bool HasLost() const noexcept;
         
+    protected:
+        struct ShipData {
+            const ShipSize size;
+            Pos start, end;
+            ShipSize remainingSize = size;
+        };
+        using ShipDataGrid = std::array<std::array<std::shared_ptr<ShipData>, GRID_SIZE>, GRID_SIZE>;
+    
+    protected:
+        static void GenerateGrid(Grid&, ShipDataGrid&);
+        static void RandomInsertShip(Grid&, ShipDataGrid&, const ShipSize);
+        static void InsertShipMargin(Grid&, const ShipData&) noexcept;
+
+        ShipData& GetShip(std::size_t x, std::size_t y);
+        const ShipData& GetShip(std::size_t x, std::size_t y) const;
+    
     private:
+        constexpr inline static uint32_t MAX_HITS = 20;
+        
         Grid _grid;
+        ShipDataGrid _shipData;
         uint32_t _hits = 0u;
     };
 

@@ -4,14 +4,19 @@
 #include <raylib.h>
 #include <logging/logging.h>
 
-
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
 #endif
 
+#include <exception>
+
+
 using namespace Battleships;
 
 void Application::Run() {
+    logging::set_file("Battleships.log");
+    logging::to_file();
+
     logging::info("Initializing App");
 
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, TITLE);
@@ -22,9 +27,17 @@ void Application::Run() {
 #else
     SetTargetFPS(30);
 
-    while (!WindowShouldClose()) {
-        Loop();
+    try {
+
+        while (!WindowShouldClose())
+            Loop();
+
+    } catch (const std::exception& e) {
+        logging::fatal("Unexpected error occured: what(): {}", e.what());
+    } catch (...) {
+        logging::fatal("Unexpected error occured: unknown");
     }
+
 #endif
 
     logging::info("Closing App");
