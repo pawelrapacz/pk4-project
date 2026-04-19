@@ -3,13 +3,6 @@ project(battleships DESCRIPTION "pk4-project" LANGUAGES CXX)
 
 set(PROJECT_AUTHOR "Paweł Rapacz")
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
-    message("---------------------------")
-    message("-- Using build type: Debug.")
-    message("---------------------------")
-endif()
-
 enable_testing()
 
 # Generate compile_commands.json
@@ -25,7 +18,7 @@ function(target_compile_strict target)
     if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -pedantic-errors)
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        target_compile_options(${target} PRIVATE /W4 /WX)
+        target_compile_options(${target} PRIVATE /W4)
     endif() 
 endfunction()
 
