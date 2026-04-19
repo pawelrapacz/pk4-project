@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Interface/Config.h"
-
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -21,12 +19,16 @@ namespace Battleships {
     class Player {
     public:
         using ShipSize = uint32_t;
-
+        
         struct Pos { std::size_t x, y; };
+        
+        static constexpr std::size_t GRID_SIZE = 10;
 
         /// \brief Represents a game board, for marking shots, ships etc.
         /// \see Square
         using Grid = std::array<std::array<Square, GRID_SIZE>, GRID_SIZE>;
+
+    public:
 
     public:
         static Grid RemoveShips(const Grid&) noexcept;

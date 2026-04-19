@@ -4,38 +4,45 @@
 
 #include <filesystem>
 #include <functional>
+#include "Graphics/Entity.h"
 
 using namespace Battleships;
 
-Button::Button(int x, int y, int width, int height, std::string_view text,
-               std::function<void()> callback, int fontSize, Color buttonColor, Color textColor)
-    : Entity(x, y),
-      _width(width),
-      _height(height),
-      _text(text),
-      _callback(callback),
-      _fontSize(fontSize),
-      _btnClr(buttonColor),
-      _txtClr(textColor) { }
+
+Button::Button(const Rectangle& rec, const std::string& text, std::function<void()> callback)
+    : _rec(rec), _text(text), _callback(callback) {
+    _textX = _rec.x + (_rec.width - MeasureText(_text.c_str(), _fontSize)) /2;
+    _textY = _rec.y + (_rec.height - _fontSize) / 2;    
+}
+
+Button::Button(float x, float y, const std::string& text, std::function<void()> callback)
+    : _rec({x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT}), _text(text), _callback(callback) {
+    _textX = _rec.x + (_rec.width - MeasureText(_text.c_str(), _fontSize)) /2;
+    _textY = _rec.y + (_rec.height - _fontSize) / 2;
+}
+
+Button::Button(const Rectangle& rec, const std::string& text, int fontSize, Color primaryClr, Color secondaryClr, Color textColor)
+    : _fontSize(fontSize), _clrPri(primaryClr), _clrSec(secondaryClr), _txtClr(textColor), _rec(rec), _text(text) {
+    _textX = _rec.x + (_rec.width - MeasureText(_text.c_str(), _fontSize)) /2;
+    _textY = _rec.y + (_rec.height - _fontSize) / 2;
+}
 
 void Button::OnUpdate() {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)
-        && CheckCollisionPointRec(GetMousePosition(), GetRect()))
+        && CheckCollisionPointRec(GetMousePosition(), _rec))
         _callback();
 }
 
-void Button::Draw() const {
-    auto textWidth = MeasureText(_text.data(), _fontSize);
-    int textX      = _x + (_width - textWidth) / 2;
-    int textY      = _y + (_height - _fontSize) / 2;
-
-    DrawRectangle(_x, _y, _width, _height, _btnClr);
-    DrawText(_text.data(), textX, textY, _fontSize, _txtClr);
+void Button::Draw() const noexcept {
+    const bool hover = CheckCollisionPointRec(GetMousePosition(), _rec);
+    DrawRectangleRec(_rec, hover ? _clrSec : _clrPri);
+    DrawText(_text.c_str(), _textX, _textY, _fontSize, _txtClr);
 }
 
-Rectangle Button::GetRect() const noexcept {
-    return Rectangle(_x, _y, _width, _height);
+void Button::SetCallback(std::function<void()> callback) noexcept {
+    _callback = callback;
 }
+
 
 TexButton::TexButton(int x, int y, std::filesystem::path path, std::function<void()> callback,
                      float scale)
@@ -55,7 +62,7 @@ void TexButton::OnUpdate() {
         _callback();
 }
 
-void TexButton::Draw() const {
+void TexButton::Draw() const noexcept {
     DrawTexture(_tex, _x, _y, WHITE);
 }
 

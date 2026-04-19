@@ -16,6 +16,11 @@ PRIVATE
     Graphics/Entity.cpp
     Interface/Button.h
     Interface/Button.cpp
+    Interface/Menu.h
+    Interface/MainMenu.h
+    Interface/MainMenu.cpp
+    Interface/GameOverMenu.h
+    Interface/GameOverMenu.cpp
     Player.h
     Player.cpp
     Enemy.h

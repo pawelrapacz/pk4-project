@@ -1,37 +1,23 @@
 #include "Game.h"
+#include "Application.h"
 #include "Interface/Config.h"
+#include "Interface/GameOverMenu.h"
+#include "Player.h"
 
 #include <raylib.h>
 #include <logging/logging.h>
 
+#include <utility>
+#include <memory>
+
 using namespace Battleships;
 
-Game::Game(const Player& plr)
-    : _plr(plr), _enm(std::make_unique<SimpleEnemy>()) { }
+Game::Game(Application& app, std::unique_ptr<Enemy> enm, Player plr)
+    : _app(app), _plr(plr), _enm(std::move(enm)) { }
 
 void Game::OnUpdate() {
-    static uint32_t lastTurn {};
-
-    if (lastTurn != GetTurn()) {
-        logging::info("{}'s turn", GetTurn() ? "Enemy" : "Player");
-        lastTurn = GetTurn();
-    }
-
-    if (GetTurn() == 0) {
-        // check grid box click
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            for (std::size_t i = 0; i < GRID_SIZE; i++) {
-                for (std::size_t j=0; j < GRID_SIZE; j++) {
-                    Rectangle rec {(float)600+40+i*40, (float)50+40+OFFSET_H3+j*40, 40, 40};
-                    if (CheckCollisionPointRec(GetMousePosition(), rec)) {
-                        PlayerTurn(i, j);
-                    }
-                }
-            }
-        }
-    }
-    else {
-        EnemyTurn();
+    if (_playing) {
+        NextTurn();
     }
 }
 
@@ -99,38 +85,45 @@ inline void DrawGrid(int x, int y, const char* label, const Player::Grid& grid, 
     }
 }
 
-static void DrawGameOver(const char* label) {
-    constexpr auto over = "GAME OVER!";
-    int posX = (WINDOW_WIDTH - MeasureText(over, FONT_SIZE_H1)) / 2;
-    int posY = (WINDOW_HEIGHT - FONT_SIZE_H1 * 2 - MARGIN_H1) / 2;
-
-    Rectangle rec {0, (float)posY - MARGIN_H1, WINDOW_WIDTH, OFFSET_H1 * 2 + MARGIN_H1};
-    DrawRectangleRec(rec, Colors::white_t);
-    // DrawRectangleLinesEx(rec, 5, Colors::blue);
-
-    DrawText(over, posX, posY, FONT_SIZE_H1, Colors::text);
-
-    posX = (WINDOW_WIDTH - MeasureText(label, FONT_SIZE_H1)) / 2;
-    posY += OFFSET_H1;
-    DrawText(label, posX, posY, FONT_SIZE_H1, Colors::text);
-}
-
 
 void Game::Draw() const {
     DrawGrid(50, 50, "Your fleet", _plr.GetGrid());
     DrawGrid(600, 50, "Enemy fleet", Player::RemoveShips(_enm->GetGrid()));
-    
-    switch (_state) {
-        case State::PlayerWon:
-            DrawGameOver("You win");
-            break;
-        case State::EnemyWon:
-            DrawGameOver("You lose");
-            break;
-        default: break;
-    }
 }
 
+std::unique_ptr<Enemy> Game::ReleaseEnemy() {
+    return std::move(_enm);
+}
+
+uint32_t Game::GetTurn() const noexcept {
+    return _turn % 2;
+}
+
+void Game::NextTurn() {
+    static uint32_t lastTurn {};
+
+    if (lastTurn != GetTurn()) {
+        logging::info("{}'s turn", GetTurn() ? "Enemy" : "Player");
+        lastTurn = GetTurn();
+    }
+
+    if (GetTurn() == 0) {
+        // check grid box click
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            for (std::size_t i = 0; i < GRID_SIZE; i++) {
+                for (std::size_t j=0; j < GRID_SIZE; j++) {
+                    Rectangle rec {(float)600+40+i*40, (float)50+40+OFFSET_H3+j*40, 40, 40};
+                    if (CheckCollisionPointRec(GetMousePosition(), rec)) {
+                        PlayerTurn(i, j);
+                    }
+                }
+            }
+        }
+    }
+    else {
+        EnemyTurn();
+    }
+}
 
 void Game::PlayerTurn(std::size_t x, std::size_t y) noexcept {
     if (_enm->Attack(x, y))
@@ -138,24 +131,20 @@ void Game::PlayerTurn(std::size_t x, std::size_t y) noexcept {
 
     if (_enm->HasLost()) {
         logging::info("Player won");
-        _state = State::PlayerWon;
+        _playing = false;
+        _app.state.playerWon = true;
+        _app.SetMenu<GameOverMenu>();
     }
 }
 
-void Game::EnemyTurn() noexcept {
+void Game::EnemyTurn() {
     if (_plr.Attack(_enm->MakeTurn(_plr.GetGrid())))
         _turn++;
 
     if (_plr.HasLost()) {
         logging::info("Enemy won");
-        _state = State::EnemyWon;
+        _playing = false;
+        _app.state.playerWon = false;
+        _app.SetMenu<GameOverMenu>();
     }
-}
-
-Game::State Game::GetState() const noexcept {
-    return _state;
-}
-
-uint32_t Game::GetTurn() const noexcept {
-    return _turn % 2;
 }

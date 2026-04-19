@@ -1,4 +1,3 @@
-#include "Interface/Config.h"
 #include "Player.h"
 
 #include <logging/logging.h>
@@ -173,7 +172,7 @@ void Player::GenerateGrid(Player::Grid& grid, Player::ShipDataGrid& dataGrid) {
 
 // normalizes the value to be in bounds of Grid
 // i.e. if you do x -= 1; you might get uint32_t(-1) which is wrong
-constexpr std::size_t nmlz(std::size_t val, std::size_t cmp = GRID_SIZE) noexcept {
+constexpr std::size_t nmlz(std::size_t val, std::size_t cmp = Player::GRID_SIZE) noexcept {
     if (val < cmp)
         return val;
     else

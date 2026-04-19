@@ -1,36 +1,41 @@
 #pragma once
 
+#include "Graphics/Entity.h"
+#include "Config.h"
+
 #include <raylib.h>
 
 #include <filesystem>
 #include <functional>
-#include <string_view>
-
-#include "Graphics/Entity.h"
+#include <string>
 
 namespace Battleships {
 
-    class Button : public Entity {
+    class Button {
     public:
-        Button(int x, int y, int width, int height, std::string_view text,
-               std::function<void()> callback, int fontSize = 20, Color buttonColor = LIGHTGRAY,
-               Color textColor = BLACK);
+        static constexpr float DEFAULT_FONT_SIZE = FONT_SIZE;
+        static constexpr float DEFAULT_WIDTH = 200;
+        static constexpr float DEFAULT_HEIGHT = 70;
 
-        void OnUpdate() override;
-        void Draw() const override;
+    public:
+        Button(const Rectangle& rec, const std::string& text, std::function<void()> callback = {});
+        Button(float x, float y, const std::string& text, std::function<void()> callback = {});
+        Button(const Rectangle& rec, const std::string& text, int fontSize, Color primaryClr, Color secondaryClr, Color textColor);
+
+        void OnUpdate();
+        void Draw() const noexcept;
         void SetCallback(std::function<void()>) noexcept;
 
-    protected:
-        Rectangle GetRect() const noexcept;
-
     private:
-        int _width;
-        int _height;
-        std::string_view _text;
+        const int _fontSize = DEFAULT_FONT_SIZE;
+        const Color _clrPri = Colors::blue;
+        const Color _clrSec = Colors::lightblue;
+        const Color _txtClr = Colors::white;
+
+        Rectangle _rec;
+        const std::string _text;
         std::function<void()> _callback;
-        int _fontSize;
-        Color _btnClr = LIGHTGRAY;
-        Color _txtClr = BLACK;
+        int _textX, _textY;
     };
 
     class TexButton : public Entity {
@@ -40,7 +45,7 @@ namespace Battleships {
         virtual ~TexButton() override;
 
         void OnUpdate() override;
-        void Draw() const override;
+        void Draw() const noexcept override;
         void SetCallback(std::function<void()>) noexcept;
 
     protected:

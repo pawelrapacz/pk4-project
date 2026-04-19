@@ -8,7 +8,7 @@ namespace Battleships {
         Entity(int x, int y) noexcept;
         virtual ~Entity() = default;
         virtual void OnUpdate() { };
-        virtual void Draw() const { };
+        virtual void Draw() const noexcept { };
         void SetPosition(int x, int y) noexcept;
         int GetX() const noexcept;
         int GetY() const noexcept;

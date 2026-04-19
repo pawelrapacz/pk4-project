@@ -1,13 +1,12 @@
 #pragma once
 
 #include <raylib.h>
-#include <cinttypes>
 
 namespace Battleships {
     constexpr auto TITLE = "Battleships";
     
     constexpr int WINDOW_WIDTH = 1100;
-    constexpr int WINDOW_HEIGHT = 700;
+    constexpr int WINDOW_HEIGHT = 600;
 
     constexpr int FONT_SIZE_H1 = 50;
     constexpr int FONT_SIZE_H2 = 40;
@@ -42,7 +41,7 @@ namespace Battleships {
         constexpr Color lightgray = Color(210,210,230,255);
 
 
-        constexpr Color make_transparent(Color clr, decltype(Color::a) a = 180) {
+        constexpr Color make_transparent(Color clr, decltype(Color::a) a = 200) {
             return {clr.r, clr.g, clr.b, a};
         }
 
