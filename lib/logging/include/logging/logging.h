@@ -88,6 +88,8 @@ namespace logging {
         return level_names[static_cast<std::size_t>(lvl)];
     }
 
+#ifndef LOGGING_DISABLE
+
     template<typename Tp>
     inline std::string create_log_message_(level lvl, const Tp& msg) {
         auto time = std::chrono::zoned_time(std::chrono::current_zone(), std::chrono::system_clock::now());
@@ -137,8 +139,6 @@ namespace logging {
         log_specs_.toStdout = tos;
     } 
 
-
-#ifndef LOGGING_DISABLE
 
     template<typename Tp>
     inline void log(level lvl, const Tp& msg) {
@@ -215,6 +215,17 @@ namespace logging {
 
 #else // LOGGING_DISABLE
 
+    inline void set_level(level) noexcept { }
+
+    inline void set_file(const std::filesystem::path&) { }
+
+    inline void set_stdout(std::ostream&) { }
+
+    inline void to_file(bool = true) noexcept { }
+
+    inline void to_stdout(bool = true) noexcept { } 
+
+
     template<typename Tp>
     inline void log(level, const Tp&) { }
 
@@ -255,3 +266,9 @@ namespace logging {
 #endif // LOGGING_DISABLE
 
 } // logging
+
+#undef LOGGING_DISABLE
+#undef LOGGING_NO_COLORS
+#undef LOGGING_ALWAYS_USE_DEBUG
+
+#undef LOGGING_USE_DEBUG_
