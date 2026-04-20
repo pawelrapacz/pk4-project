@@ -107,7 +107,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
     <vector>
 
     # Dependencies
-    <httplib.h>
+    # <httplib.h> excluded because it causes API conflict with raylib on Windows
     <logging/logging.h>
     <nlohmann/json.hpp>
     <raylib.h>
