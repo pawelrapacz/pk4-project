@@ -45,7 +45,7 @@ TEST_CASE("disable stdout") {
     CHECK(str.str().empty());
 }
 
-TEST_CASE("to file") {
+TEST_CASE("logging to file") {
     INITIALIZE();
     logging::to_file();
 
@@ -75,7 +75,7 @@ TEST_CASE("to file") {
     }
 }
 
-TEST_CASE("basic log") {
+TEST_CASE("logging basic") {
     INITIALIZE();
 
     SUBCASE("log (debug)") {
@@ -109,7 +109,7 @@ TEST_CASE("basic log") {
     }
 }
 
-TEST_CASE("formatted log") {
+TEST_CASE("logging format") {
     INITIALIZE();
 
     SUBCASE("log (debug)") {

@@ -17,8 +17,12 @@ using namespace Battleships;
 void Application::Run() {
     logging::set_file("Battleships.log");
     logging::to_file();
-
+    
     logging::info("Initializing App");
+    
+#ifdef BATTLESHIPS_DISABLE_RAYLIB_LOGS
+    SetTraceLogLevel(LOG_NONE);
+#endif
 
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, TITLE);
     SetMenu<MainMenu>();

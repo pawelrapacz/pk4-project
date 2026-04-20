@@ -1,15 +1,8 @@
 # Project Executable
 add_executable(${PROJECT_NAME})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}
-)
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-
 # Sources
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_sources(${PROJECT_NAME}
 PRIVATE
     Graphics/Entity.h
@@ -32,10 +25,32 @@ PRIVATE
     main.cpp
 )
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}
+)
+
 set(raylib_VERBOSE 1)
-target_link_libraries(${PROJECT_NAME} raylib logging)
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    httplib::httplib
+    logging
+    nlohmann_json::nlohmann_json
+    raylib
+)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    # Disable logging for: Release, MinSizeRel and RelWithDebInfo builds
+    $<$<NOT:$<CONFIG:Debug>>:LOGGING_DISABLE>
+    $<$<NOT:$<CONFIG:Debug>>:BATTLESHIPS_DISABLE_RAYLIB_LOGS>
+)
+
 target_compile_strict(${PROJECT_NAME})
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
+
+
+# Platform Specific configurations
 
 # Web Configurations
 if (DEFINED PLATFORM AND PLATFORM STREQUAL "Web")
@@ -43,9 +58,57 @@ if (DEFINED PLATFORM AND PLATFORM STREQUAL "Web")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1")
 endif()
 
-# Checks if OSX and links appropriate frameworks (Only required on MacOS)
 if (APPLE)
+    # Checks if OSX and links appropriate frameworks (Only required on MacOS)
     target_link_libraries(${PROJECT_NAME} "-framework IOKit")
     target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
     target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+
+    # macOS: build as .app bundle in all configs
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE TRUE
+    )
 endif()
+
+if (WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES 
+        # Windows: GUI for Release, MinSizeRel and RelWithDebInfo builds, console in Debug
+        WIN32_EXECUTABLE $<$<NOT:$<CONFIG:Debug>>:TRUE>
+    )
+endif()
+
+# Precompiled headers
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+    # std
+    <algorithm>
+    <algorithm>
+    <array>
+    <atomic>
+    <cassert>
+    <chrono>
+    <concepts>
+    <cstddef>
+    <cstdint>
+    <exception>
+    <filesystem>
+    <fstream>
+    <functional>
+    <future>
+    <limits>
+    <memory>
+    <mutex>
+    <random>
+    <stdexcept>
+    <string_view>
+    <string>
+    <thread>
+    <type_traits>
+    <utility>
+    <vector>
+
+    # Dependencies
+    <httplib.h>
+    <logging/logging.h>
+    <nlohmann/json.hpp>
+    <raylib.h>
+)

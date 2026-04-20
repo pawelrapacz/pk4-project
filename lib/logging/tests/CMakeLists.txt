@@ -4,6 +4,7 @@ add_executable(logging-tests
     styles_test.cpp
 )
 
-target_link_libraries(logging-tests doctest logging)
+target_link_libraries(logging-tests doctest::doctest logging)
+
 target_compile_strict(logging-tests)
-add_test(NAME LoggingTest COMMAND logging-tests)
+doctest_discover_tests(logging-tests)
