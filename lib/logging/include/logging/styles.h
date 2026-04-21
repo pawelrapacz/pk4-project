@@ -239,3 +239,6 @@ namespace styles {
 
 }   // namespace styles
 }   // namespace logging
+
+#undef ANSI_CSI
+#undef ANSI_ESC

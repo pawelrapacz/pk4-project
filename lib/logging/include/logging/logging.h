@@ -21,7 +21,7 @@
 // LOGGING_ALWAYS_USE_DEBUG
 
 
-#if !defined(NDEBUG) || defined(_DEBUG) || defined(LOGGING_ALWAYS_USE_DEBUG)
+#if !defined(NDEBUG) || defined(LOGGING_ALWAYS_USE_DEBUG)
     #define LOGGING_USE_DEBUG_
 #endif
 
@@ -266,9 +266,5 @@ namespace logging {
 #endif // LOGGING_DISABLE
 
 } // logging
-
-#undef LOGGING_DISABLE
-#undef LOGGING_NO_COLORS
-#undef LOGGING_ALWAYS_USE_DEBUG
 
 #undef LOGGING_USE_DEBUG_
