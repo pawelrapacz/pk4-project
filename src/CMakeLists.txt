@@ -31,7 +31,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}
 )
 
-set(raylib_VERBOSE 1)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     httplib::httplib
@@ -41,9 +40,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    # Disable logging for: Release, MinSizeRel and RelWithDebInfo builds
+    $<$<CONFIG:Debug>:DEBUG>
+    # Use logging only with Debug builds
     $<$<NOT:$<CONFIG:Debug>>:LOGGING_DISABLE>
-    $<$<NOT:$<CONFIG:Debug>>:BATTLESHIPS_DISABLE_RAYLIB_LOGS>
 )
 
 target_compile_strict(${PROJECT_NAME})
@@ -74,6 +73,13 @@ if (WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES 
         # Windows: GUI for Release, MinSizeRel and RelWithDebInfo builds, console in Debug
         WIN32_EXECUTABLE $<$<NOT:$<CONFIG:Debug>>:TRUE>
+    )
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        # compatibility fix (Windows.h, raylib.h and httplib.h)
+        WIN32_LEAN_AND_MEAN
+        NOGDI
+        NOUSER
+        NOMINMAX
     )
 endif()
 
@@ -107,7 +113,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
     <vector>
 
     # Dependencies
-    # <httplib.h> excluded because it causes API conflict with raylib on Windows
+    <httplib.h>
     <logging/logging.h>
     <nlohmann/json.hpp>
     <raylib.h>

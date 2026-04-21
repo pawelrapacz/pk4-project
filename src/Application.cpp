@@ -15,14 +15,15 @@
 using namespace Battleships;
 
 void Application::Run() {
-    logging::set_file("Battleships.log");
-    logging::to_file();
-    
-    logging::info("Initializing App");
-    
-#ifdef BATTLESHIPS_DISABLE_RAYLIB_LOGS
+#ifndef DEBUG // remove in Release
     SetTraceLogLevel(LOG_NONE);
-#endif
+#endif 
+    // logging removers below functions in Release
+    // with the LOGGING_DISABLE macro (see CMakeLists.txt)
+    logging::to_file();
+    logging::set_file("Battleships.log");
+
+    logging::info("Initializing App");
 
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, TITLE);
     SetMenu<MainMenu>();
