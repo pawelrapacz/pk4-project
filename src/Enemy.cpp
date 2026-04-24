@@ -42,14 +42,15 @@ nlohmann::json GridToJson(const Player::Grid& grid) {
 }
 
 
-AIEnemy::Pos AIEnemy::MakeTurn(const Grid& grid [[maybe_unused]]) const noexcept  {
+AIEnemy::Pos AIEnemy::MakeTurn(const Grid& grid [[maybe_unused]]) const {
     httplib::Client client("http://localhost:11434");
 
-    static std::string prompt = "You are playing battleship game. With the given table make the best possible move, the table contains values like \".\" (empty posible to attack), \"M\" (already attacked - missed), \"H\" (already attacked hit), these values represent points. You can only attack empty points. The given table is in json format: ";
+    std::string prompt = "You are playing battleship game. With the given table make the best possible move, the table contains values like \".\" (empty posible to attack), \"M\" (already attacked - missed), \"H\" (already attacked hit), these values represent points. You can only attack empty points. The given table is in json format: ";
+    prompt += GridToJson(grid).dump();
 
     nlohmann::json req = {
-        {"model", "mistral:latest"},
-        {"prompt", prompt + GridToJson(grid).dump()},
+        {"model", "gemma:2b"},
+        {"prompt", prompt},
         {"stream", false},
         {"format", {
             {"type", "object"},
@@ -63,10 +64,7 @@ AIEnemy::Pos AIEnemy::MakeTurn(const Grid& grid [[maybe_unused]]) const noexcept
 
     auto res = client.Post("/api/generate", req.dump(), "application/json");
     
-
     nlohmann::json attackVec = nlohmann::json::parse(nlohmann::json::parse(res->body)["response"].get<std::string>());
-
-    logging::warn(attackVec.dump());
     
     std::size_t x = attackVec["x"].get<std::size_t>();
     std::size_t y = attackVec["y"].get<std::size_t>();

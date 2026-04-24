@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Enemy.h"
 #include "Interface/Config.h"
 #include "Interface/MainMenu.h"
 
@@ -52,7 +53,16 @@ void Application::Run() {
 
 void Application::RestartGame() {
     auto enemy = _game->ReleaseEnemy();
+
+    // create new enemy of the same type
+    if (dynamic_cast<SimpleEnemy*>(enemy.get()))
+        enemy = std::make_unique<SimpleEnemy>();
+    else
+        enemy = std::make_unique<AIEnemy>();
+
+    // create new game
     _game = std::make_unique<Game>(*this, std::move(enemy));
+    _menu.reset();
 }
 
 void Application::EndGame() noexcept {

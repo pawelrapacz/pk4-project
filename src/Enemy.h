@@ -9,7 +9,7 @@ namespace Battleships {
     public:
         Enemy() = default;
         virtual ~Enemy() = default;
-        virtual Pos MakeTurn(const Grid&) const noexcept = 0;
+        virtual Pos MakeTurn(const Grid&) const = 0;
     };
 
     class SimpleEnemy : public Enemy {
@@ -17,7 +17,7 @@ namespace Battleships {
     };
 
     class AIEnemy : public Enemy {
-        Pos MakeTurn(const Grid&) const noexcept override;
+        Pos MakeTurn(const Grid&) const override;
     };
 
 }
