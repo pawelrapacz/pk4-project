@@ -14,8 +14,14 @@ PRIVATE
     Interface/MainMenu.cpp
     Interface/GameOverMenu.h
     Interface/GameOverMenu.cpp
+    Interface/GridView.h
+    Interface/GridView.cpp
+    Interface/FleetSetup.h
+    Interface/FleetSetup.cpp
     Player.h
     Player.cpp
+    PlayerBuilder.h
+    PlayerBuilder.cpp
     Enemy.h
     Enemy.cpp
     Game.h
