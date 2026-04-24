@@ -26,19 +26,21 @@ endfunction()
 include(FetchContent)
 
 # raylib
+set(RAYLIB_VERSION 6.0)
 FetchContent_Declare(
     raylib
     GIT_REPOSITORY https://github.com/raysan5/raylib.git
-    GIT_TAG 5.5
-    FIND_PACKAGE_ARGS 5.5
+    GIT_TAG ${RAYLIB_VERSION}
+    FIND_PACKAGE_ARGS ${RAYLIB_VERSION}
 )
 
 # cpp-httplib
+set(HTTP_VERSION 0.43.1)
 FetchContent_Declare(
     httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
-    GIT_TAG v0.43.1
-    FIND_PACKAGE_ARGS 0.43.1
+    GIT_TAG v${HTTP_VERSION}
+    FIND_PACKAGE_ARGS ${HTTP_VERSION}
 )
 
 # json
@@ -52,11 +54,12 @@ FetchContent_Declare(
 )
 
 # doctest
+set(DOCTEST_VERSION 2.5.2)
 FetchContent_Declare(
     doctest
     GIT_REPOSITORY https://github.com/doctest/doctest.git
-    GIT_TAG v2.5.2
-    FIND_PACKAGE_ARGS 2.5.2
+    GIT_TAG v${DOCTEST_VERSION}
+    FIND_PACKAGE_ARGS ${DOCTEST_VERSION}
 )
 
 FetchContent_MakeAvailable(raylib nlohmann_json httplib doctest)
