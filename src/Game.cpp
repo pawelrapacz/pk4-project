@@ -9,6 +9,8 @@
 
 #include <utility>
 #include <memory>
+#include <chrono>
+#include <future>
 
 using namespace Battleships;
 
@@ -30,12 +32,12 @@ void Game::OnUpdate() {
         lastTurn = GetTurn();
     }
 
-    if (GetTurn() == 0) {
+    if (GetTurn() == 0) { // player turn
+        // get the attack position
         auto pos = _eghnd.GetClick();
 
-        if (pos.has_value())
-            PlayerTurn(pos.value());
-
+        if (pos.has_value()) // chceck if exists
+            ResolvePlayerTurn(pos.value());
     } else {
         EnemyTurn();
     }
@@ -54,8 +56,7 @@ std::uint32_t Game::GetTurn() const noexcept {
     return _turn % 2;
 }
 
-
-void Game::PlayerTurn(Player::Pos pos) noexcept {
+void Game::ResolvePlayerTurn(Player::Pos pos) noexcept {
     if (_enm->Attack(pos))
         _turn++;
 
@@ -67,8 +68,8 @@ void Game::PlayerTurn(Player::Pos pos) noexcept {
     }
 }
 
-void Game::EnemyTurn() {
-    if (_plr.Attack(_enm->MakeTurn(_plr.GetGrid())))
+void Game::ResolveEnemyTurn(Player::Pos pos) noexcept {
+    if (_plr.Attack(pos))
         _turn++;
 
     if (_plr.HasLost()) {
@@ -76,5 +77,20 @@ void Game::EnemyTurn() {
         _playing = false;
         _app.state.playerWon = false;
         _app.SetMenu<GameOverMenu>();
+    }
+}
+
+void Game::EnemyTurn() {
+    using namespace std::chrono_literals;
+
+    static std::future<Player::Pos> posF;
+
+    if (posF.valid() and posF.wait_for(1ms) == std::future_status::ready) {
+        ResolveEnemyTurn(posF.get());
+    } else {
+        // TODO: Make it thread safe (_enm access, read/write)
+        posF = std::async(std::launch::async, [enm = _enm.get(), grid = _plr.GetGrid()]() {
+            return enm->MakeTurn(grid);
+        });
     }
 }

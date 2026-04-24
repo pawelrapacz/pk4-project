@@ -23,9 +23,10 @@ namespace Battleships {
         std::uint32_t GetTurn() const noexcept;
     
     private:
-        void NextTurn();
-        void PlayerTurn(Player::Pos) noexcept;
-        void EnemyTurn();
+        void EnemyTurn(); // async
+        // player turn doesn't have to be async
+        void ResolvePlayerTurn(Player::Pos) noexcept;
+        void ResolveEnemyTurn(Player::Pos) noexcept;
 
     private:
         Application& _app;
