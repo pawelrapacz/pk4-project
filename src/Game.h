@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <future>
 
 
 namespace Battleships {
@@ -35,6 +36,7 @@ namespace Battleships {
         
         Player _plr;
         std::unique_ptr<Enemy> _enm;
+        std::future<Player::Pos> _enmAttackFuture;
         std::uint32_t _turn = 0u;
         bool _playing = true;
     };

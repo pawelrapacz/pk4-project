@@ -83,14 +83,16 @@ void Game::ResolveEnemyTurn(Player::Pos pos) noexcept {
 void Game::EnemyTurn() {
     using namespace std::chrono_literals;
 
-    static std::future<Player::Pos> posF;
-
-    if (posF.valid() and posF.wait_for(1ms) == std::future_status::ready) {
-        ResolveEnemyTurn(posF.get());
-    } else {
+    if (not _enmAttackFuture.valid()) {
+        // create new attack future
         // TODO: Make it thread safe (_enm access, read/write)
-        posF = std::async(std::launch::async, [enm = _enm.get(), grid = _plr.GetGrid()]() {
+        _enmAttackFuture = std::async(std::launch::async, [enm = _enm.get(), grid = _plr.GetGrid()]() {
             return enm->MakeTurn(grid);
         });
+    } else if (_enmAttackFuture.wait_for(1ms) == std::future_status::ready) {
+        // if ready, attack
+        ResolveEnemyTurn(_enmAttackFuture.get());
+    } else {
+        // if awaiting for decision continue to next frame
     }
 }
