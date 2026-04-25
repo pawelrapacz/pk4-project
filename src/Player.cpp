@@ -81,15 +81,6 @@ const Player::ShipData& Player::GetShip(std::size_t x, std::size_t y) const {
     }
 }
 
-// normalizes the value to be in bounds of Grid
-// i.e. if you do x -= 1; you might get uint32_t(-1) which is wrong
-constexpr std::size_t nmlz(std::size_t val, std::size_t cmp = Player::GRID_SIZE) noexcept {
-    if (val < cmp)
-        return val;
-    else
-        return 0u;
-}
-
 void Player::InsertShipMargin(Grid& grid, const ShipData& ship) noexcept {
     std::size_t startX = nmlz(ship.start.x - 1);
     std::size_t startY = nmlz(ship.start.y - 1);

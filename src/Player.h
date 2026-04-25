@@ -1,7 +1,8 @@
 #pragma once
 
-#include <array>
+#include <cstddef>
 #include <cstdint>
+#include <array>
 #include <memory>
 
 namespace Battleships {
@@ -18,6 +19,8 @@ namespace Battleships {
     
     class Player {
     public:
+        using ShipSize = std::uint32_t;
+
         struct Pos { std::size_t x, y; };
         static constexpr std::size_t GRID_SIZE = 10;
 
@@ -38,23 +41,29 @@ namespace Battleships {
         bool HasLost() const noexcept;
         
     protected:
-        using ShipSize = std::uint32_t;
-        
         struct ShipData {
-            const ShipSize size;
+            ShipSize size;
             Pos start, end;
             ShipSize remainingSize = size;
         };
         using ShipDataGrid = std::array<std::array<std::shared_ptr<ShipData>, GRID_SIZE>, GRID_SIZE>;
     
-    protected:
+    private:
         static void InsertShipMargin(Grid&, const ShipData&) noexcept;
+        
+        // normalizes the value to be in bounds of Grid
+        // i.e. if you do x -= 1; you might get uint32_t(-1) which is wrong
+        static constexpr std::size_t nmlz(std::size_t val, std::size_t cmp = Player::GRID_SIZE) noexcept {
+            if (val < cmp)
+                return val;
+            else
+                return 0u;
+        }
 
+        Player(Grid, ShipDataGrid);
+        
         ShipData& GetShip(std::size_t x, std::size_t y);
         const ShipData& GetShip(std::size_t x, std::size_t y) const;
-
-    private:
-        Player(Grid, ShipDataGrid);
     
     private:
         constexpr inline static std::uint32_t MAX_HITS = 20;
