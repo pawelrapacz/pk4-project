@@ -10,8 +10,9 @@ namespace Battleships {
         void Draw() const noexcept override;
     
     private:
+        Button _quickBtn;
+        Button _quickAIBtn;
         Button _newBtn;
-        Button _newAIBtn;
         Button _quitBtn;
     };
 }

@@ -1,5 +1,6 @@
-#include "Interface/PlayerBuilderView.h"
+#include "Interface/PlayerBuilderMenu.h"
 #include "Application.h"
+#include "Enemy.h"
 #include "Interface/Config.h"
 #include "Interface/GridView.h"
 #include "Player.h"
@@ -9,26 +10,36 @@
 
 using namespace Battleships;
 
-PlayerBuilderView::PlayerBuilderView(Application& app)
+PlayerBuilderMenu::PlayerBuilderMenu(Application& app)
     : Menu(app),
-      _ghnd(100, 50, "Arrange your fleet"),
-      _clearBtn({700, 270, 300, 70}, "Clear", {}),
-      _generateBtn({700, 360, 300, 70}, "Generate Random", {}),
-      _startBtn({700, 450, 300, 70}, "Start", {}),
-      _nextShipView({750, 50, 200, 200}) {
+      _ghnd(300, 50, "Arrange your fleet"),
+      _clearBtn({770, 160, 300, 70}, "Clear", {}),
+      _generateBtn({770, 250, 300, 70}, "Generate Random", {}),
+      _startBtn({770, 340, 300, 70}, "Start Game", {}),
+      _startAIBtn({770, 430, 300, 70}, "Start Game (AI)", {}),
+      _nextShipView({50, 200, 200, 200}) {
         _clearBtn.SetCallback([this]() {
             this->_bld.Clear();
         });
         _generateBtn.SetCallback([this]() {
             this->_bld.GenerateRandomGrid();
         });
+        _startBtn.SetCallback([this]() {
+            if (this->_bld.Ready())
+                this->_app.StartNewGame<SimpleEnemy>(this->_bld.Build());
+        });
+        _startAIBtn.SetCallback([this]() {
+            if (this->_bld.Ready())
+                this->_app.StartNewGame<AIEnemy>(this->_bld.Build());
+        });
       }
 
 
-void PlayerBuilderView::OnUpdate() {
+void PlayerBuilderMenu::OnUpdate() {
     _clearBtn.OnUpdate();
     _generateBtn.OnUpdate();
     _startBtn.OnUpdate();
+    _startAIBtn.OnUpdate();
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(GetMousePosition(), _nextShipView)) {
         if (_ort == PlayerBuilder::ShipOrientation::Horizontal)
@@ -45,7 +56,7 @@ void PlayerBuilderView::OnUpdate() {
     }
 }
 
-void PlayerBuilderView::Draw() const noexcept {
+void PlayerBuilderMenu::Draw() const noexcept {
     DrawRectangleRec(_nextShipView, Colors::white);
     DrawRectangleLinesEx(_nextShipView, 1.7, Colors::black);
 
@@ -57,10 +68,11 @@ void PlayerBuilderView::Draw() const noexcept {
     _clearBtn.Draw();
     _generateBtn.Draw();
     _startBtn.Draw();
+    _startAIBtn.Draw();
 }
 
 
-void PlayerBuilderView::DrawShip(Player::ShipSize size) const noexcept {
+void PlayerBuilderMenu::DrawShip(Player::ShipSize size) const noexcept {
     float innerSize = GRID_SQUARE_WIDTH * 0.7f;
     float innerOffset = (GRID_SQUARE_WIDTH-innerSize)/2;
 

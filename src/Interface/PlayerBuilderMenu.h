@@ -8,9 +8,9 @@
 #include "raylib.h"
 
 namespace Battleships {
-    class PlayerBuilderView : public Menu {
+    class PlayerBuilderMenu : public Menu {
     public:
-        PlayerBuilderView(Application&);
+        PlayerBuilderMenu(Application&);
 
         void OnUpdate() override;
         void Draw() const noexcept override;
@@ -23,6 +23,8 @@ namespace Battleships {
         Button _clearBtn;
         Button _generateBtn;
         Button _startBtn;
+        Button _startAIBtn;
+
         Rectangle _nextShipView;
 
         PlayerBuilder::ShipOrientation _ort = PlayerBuilder::ShipOrientation::Vertical;

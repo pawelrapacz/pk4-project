@@ -16,8 +16,8 @@ PRIVATE
     Interface/GameOverMenu.cpp
     Interface/GridView.h
     Interface/GridView.cpp
-    Interface/PlayerBuilderView.h
-    Interface/PlayerBuilderView.cpp
+    Interface/PlayerBuilderMenu.h
+    Interface/PlayerBuilderMenu.cpp
     Player.h
     Player.cpp
     PlayerBuilder.h

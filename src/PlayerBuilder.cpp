@@ -108,13 +108,18 @@ const Player::Grid& PlayerBuilder::GetGrid() const noexcept {
     return _grid;
 }
 
+bool PlayerBuilder::Ready() const noexcept {
+    for (auto i : _fleet)
+        if (i.count > 0)
+            return false;
+    return true;
+}
+
 Player PlayerBuilder::Build() const {
     logging::info("Building player.");
-    for (auto i : _fleet) {
-        if (i.count > 0) {
-            logging::error("Player not ready for build.");
-            throw std::logic_error("Player not ready for build.");
-        }
+    if (!Ready()) {
+        logging::error("Player not ready for build.");
+        throw std::runtime_error("Player not ready for build.");
     }
 
     return {RemoveMargins(_grid), _shipData};

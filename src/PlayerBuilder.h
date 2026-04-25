@@ -44,6 +44,7 @@ namespace Battleships {
         bool TryInsertShip(Player::Pos, ShipOrientation);
         void RemoveShip(Player::Pos);
         const Player::Grid& GetGrid() const noexcept;
+        bool Ready() const noexcept;
         Player Build() const;
     
     private:        

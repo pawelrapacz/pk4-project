@@ -113,7 +113,8 @@ void GridView::DrawGrid(const Player::Grid& grid) const noexcept {
                     DrawRectangleRec(inner, Colors::red);
                     break;
                 case Square::Missed:
-                    DrawRectangleRec(inner, Colors::lightblue);
+                    // DrawRectangleRec(inner, Colors::lightblue);
+                    DrawCircle(outer.x + outer.width / 2, outer.y + outer.height / 2, 3, Colors::black);
                     break;
                 default:
                     break;

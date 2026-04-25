@@ -11,7 +11,7 @@ using namespace Battleships;
 GameOverMenu::GameOverMenu(Application& game)
     : Menu(game),
     _rec({0, (WINDOW_HEIGHT - 250) / 2.f, WINDOW_WIDTH, 250}),
-    _newBtn(WINDOW_WIDTH / 2.f - 20 - Button::DEFAULT_WIDTH, _rec.y + 160, "New Game"),
+    _newBtn(WINDOW_WIDTH / 2.f - 20 - Button::DEFAULT_WIDTH, _rec.y + 160, "Quick Game"),
     _mainMenuBtn(WINDOW_WIDTH / 2.f + 20, _rec.y + 160,"Main Menu")
 {
     logging::info("Initializing GameOverMenu");
