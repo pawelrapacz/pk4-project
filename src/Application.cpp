@@ -22,7 +22,7 @@ void Application::Run() {
     // logging removers below functions in Release
     // with the LOGGING_DISABLE macro (see CMakeLists.txt)
     logging::to_file();
-    logging::set_file("Battleships.log");
+    // logging::set_file("Battleships.log");
 
     logging::info("Initializing App");
 
@@ -62,7 +62,7 @@ void Application::RestartGame() {
 
     // create new game
     _game = std::make_unique<Game>(*this, std::move(enemy));
-    _menu.reset();
+    state.showMenu = false;
 }
 
 void Application::EndGame() noexcept {
@@ -77,24 +77,33 @@ void Application::Loop() {
 }
 
 void Application::OnUpdate() {
-    if (_menu)
+    // update menu (potentially change menu, or start game)
+    if (_menu && state.showMenu)
         _menu->OnUpdate();
 
+    // update game (potentially change menu)
     if (_game)
         _game->OnUpdate();
+
+    // check for menu updates (order fixes flickering)
+    if(_nextMenu)
+        _menu = std::move(_nextMenu);
 }
 
 void Application::Draw() const noexcept {
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
+    
+#ifdef DEBUG
     DrawFPS(10, 10);
+#endif
 
     // order is important because some menus overlay Game
     if (_game)
         _game->Draw();
 
-    if (_menu)
+    if (_menu && state.showMenu)
         _menu->Draw();
 
 

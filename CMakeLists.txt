@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(battleships DESCRIPTION "pk4-project" LANGUAGES CXX)
+project(Battleships DESCRIPTION "pk4-project" LANGUAGES CXX)
 
 set(PROJECT_AUTHOR "Paweł Rapacz")
 
@@ -15,10 +15,36 @@ set(
 )
 
 function(target_compile_strict target)
-    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -pedantic-errors)
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_compile_options(${target} PRIVATE /W4)
+    endif() 
+endfunction()
+
+function(target_sanitize target type)
+    message("target_sanitize is active only in debug builds (Debug RelWithDebInfo)")
+
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+        if (NOT type MATCHES "fuzzer")
+            target_compile_options(${target} PRIVATE
+                $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-fsanitize=${type}>
+                $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-fno-omit-frame-pointer>
+            )
+            target_link_options(${target} PRIVATE
+                $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-fsanitize=${type}>
+            )
+        endif()
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        message("MSVC supports only address, kernel-address and fuzzer sanitization")
+        if (type MATHES "address|kernel-address|fuzzer")
+            target_compile_options(${target} PRIVATE
+                $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:/fsanitize=${type}>
+            )
+            target_link_options(${target} PRIVATE
+                $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:/fsanitize=${type}>
+            )
+        endif()
     endif() 
 endfunction()
 

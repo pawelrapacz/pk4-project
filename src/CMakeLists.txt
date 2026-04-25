@@ -52,6 +52,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 target_compile_strict(${PROJECT_NAME})
+target_sanitize(${PROJECT_NAME} "address")
+target_sanitize(${PROJECT_NAME} "undefined")
+target_sanitize(${PROJECT_NAME} "leak")
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 
 
