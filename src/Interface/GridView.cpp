@@ -12,7 +12,7 @@ using namespace Battleships;
 
 GridView::GridView(float x, float y, const char* label, float size)
     : _size(size), _label(label) {
-    
+    logging::info("Initializing GridView");
     _lx = x + (_size * (GRID_SIZE + 1) - MeasureText(_label, FONT_SIZE_H3))/2;
     _ly = y;
 

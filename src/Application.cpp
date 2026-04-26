@@ -22,7 +22,7 @@ void Application::Run() {
     // logging removers below functions in Release
     // with the LOGGING_DISABLE macro (see CMakeLists.txt)
     logging::to_file();
-    // logging::set_file("Battleships.log");
+    logging::set_file("Battleships.log");
 
     logging::info("Initializing App");
 
@@ -51,26 +51,6 @@ void Application::Run() {
     CloseWindow();
 }
 
-void Application::RestartGame() {
-    auto enemy = _game->ReleaseEnemy();
-
-    // create new enemy of the same type
-    if (dynamic_cast<SimpleEnemy*>(enemy.get()))
-        enemy = std::make_unique<SimpleEnemy>();
-    else
-        enemy = std::make_unique<AIEnemy>();
-
-    // create new game
-    _game = std::make_unique<Game>(*this, std::move(enemy));
-    state.showMenu = false;
-}
-
-void Application::EndGame() noexcept {
-    logging::info("Ending Game");
-    _game.reset();
-}
-
-
 void Application::Loop() {
     OnUpdate();
     Draw();
@@ -82,7 +62,7 @@ void Application::OnUpdate() {
         _menu->OnUpdate();
 
     // update game (potentially change menu)
-    if (_game)
+    else if (_game) 
         _game->OnUpdate();
 
     // check for menu updates (order fixes flickering)
@@ -108,4 +88,24 @@ void Application::Draw() const noexcept {
 
 
     EndDrawing();
+}
+
+void Application::RestartGame() {
+    logging::info("Restarting game");
+    auto enemy = _game->ReleaseEnemy();
+
+    // create new enemy of the same type
+    if (dynamic_cast<SimpleEnemy*>(enemy.get()))
+        enemy = std::make_unique<SimpleEnemy>();
+    else
+        enemy = std::make_unique<AIEnemy>();
+
+    // create new game
+    _game = std::make_unique<Game>(*this, std::move(enemy));
+    state.showMenu = false;
+}
+
+void Application::EndGame() noexcept {
+    logging::info("Ending Game");
+    _game.reset();
 }

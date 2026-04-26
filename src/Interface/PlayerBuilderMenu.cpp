@@ -18,6 +18,7 @@ PlayerBuilderMenu::PlayerBuilderMenu(Application& app)
       _startBtn({770, 340, 300, 70}, "Start Game", {}),
       _startAIBtn({770, 430, 300, 70}, "Start Game (AI)", {}),
       _nextShipView({50, 200, 200, 200}) {
+        logging::info("Initializing PlayerBuilderMenu");
         _clearBtn.SetCallback([this]() {
             this->_bld.Clear();
         });

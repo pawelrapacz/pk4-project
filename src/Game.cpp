@@ -19,7 +19,9 @@ Game::Game(Application& app, std::unique_ptr<Enemy> enm, Player plr)
       _pghnd(50, 50, "Your fleet"),
       _eghnd(600, 50, "Enemy fleet"),
       _plr(plr),
-      _enm(std::move(enm)) { }
+      _enm(std::move(enm)) {
+        logging::info("Initializing Game");
+      }
 
 
 void Game::OnUpdate() {
