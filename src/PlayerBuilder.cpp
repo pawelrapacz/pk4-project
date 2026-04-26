@@ -48,7 +48,7 @@ void PlayerBuilder::Clear() noexcept {
     _shipData = {};
 }
 
-std::optional<Player::ShipSize> PlayerBuilder::GetNextShipToInsert() const noexcept {
+std::optional<ShipSize> PlayerBuilder::GetNextShipToInsert() const noexcept {
     for (auto& i : _fleet)
         if (i.count > 0)
             return {i.size};
@@ -84,7 +84,7 @@ void PlayerBuilder::RemoveShip(Pos pos) {
     // remove ship and data
     for (std::size_t i = ship->start.x; i < ship->end.x; i++) {
         for (std::size_t j= ship->start.y; j < ship->end.y; j++) {
-            _grid[i][j] = Square::None;
+            _grid[i][j] = GridSquare::None;
             _shipData[i][j].reset();
         }
     }
@@ -104,7 +104,7 @@ void PlayerBuilder::RemoveShip(Pos pos) {
     logging::info("Successfully removed ship");
 }
 
-const Player::Grid& PlayerBuilder::GetGrid() const noexcept {
+const Grid& PlayerBuilder::GetGrid() const noexcept {
     return _grid;
 }
 
@@ -147,13 +147,13 @@ PlayerBuilder::ShipData PlayerBuilder::CreateShip(Pos start, ShipSize size, Ship
     return {size, start, end};
 }
 
-PlayerBuilder::Grid PlayerBuilder::RemoveMargins(const Grid& grid) noexcept {
+Grid PlayerBuilder::RemoveMargins(const Grid& grid) noexcept {
     Grid out = grid;
-    // erase Square::Missed (margins for insertion)
-    for (std::size_t i {}; i < Player::GRID_SIZE; i++)
-        for (std::size_t j {}; j < Player::GRID_SIZE; j++)
-            if (out[i][j] != Square::Ship)
-                out[i][j] = Square::None;
+    // erase GridSquare::Missed (margins for insertion)
+    for (std::size_t i {}; i < GRID_SIZE; i++)
+        for (std::size_t j {}; j < GRID_SIZE; j++)
+            if (out[i][j] != GridSquare::Ship)
+                out[i][j] = GridSquare::None;
 
     return out;
 }
@@ -212,10 +212,10 @@ void PlayerBuilder::InsertShip(const ShipData& ship) {
     for (std::size_t i = ship.start.x; i < ship.end.x; i++) {
         for (std::size_t j= ship.start.y; j < ship.end.y; j++) {
             // assert that position is empty
-            assert(not _shipData[i][j] && _grid[i][j] == Square::None
+            assert(not _shipData[i][j] && _grid[i][j] == GridSquare::None
                 && "Cannot insert ship, position already taken.");
 
-            _grid[i][j] = Square::Ship;
+            _grid[i][j] = GridSquare::Ship;
             _shipData[i][j] = shipPtr;
         }
     }
@@ -229,7 +229,7 @@ bool PlayerBuilder::ValidateShipPlacement(const ShipData& ship) const noexcept {
     // collisions
     for (std::size_t i = ship.start.x; i < ship.end.x; i++)
         for (std::size_t j = ship.start.y; j < ship.end.y; j++)
-            if (_grid[i][j] != Square::None)
+            if (_grid[i][j] != GridSquare::None)
                 return false;
     return true;
 }

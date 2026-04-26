@@ -10,12 +10,12 @@
 using namespace Battleships;
 
 
-Player::Grid Player::RemoveShips(const Player::Grid& grid) noexcept {
+Grid Player::RemoveShips(const Grid& grid) noexcept {
     Grid newGrid = grid;
     for (std::size_t i = 0; i < GRID_SIZE; i++)
         for (std::size_t j = 0; j < GRID_SIZE; j++)
-            if (newGrid[i][j] == Square::Ship)
-                newGrid[i][j] = Square::None;
+            if (newGrid[i][j] == GridSquare::Ship)
+                newGrid[i][j] = GridSquare::None;
     return newGrid;
 }
 
@@ -25,44 +25,50 @@ Player::Player()
 Player::Player(Grid grid, ShipDataGrid shipData)
     : _grid(std::move(grid)), _shipData(std::move(shipData)) { }
 
-bool Player::Attack(std::size_t x, std::size_t y) noexcept {
+Player::AttackResult Player::Attack(std::size_t x, std::size_t y) noexcept {
     assert(x < GRID_SIZE && y < GRID_SIZE && "x and y must be in bounds of grid");
+
+    AttackResult res{};
     switch (_grid[x][y]) {
-        case Square::None: // MISS
-            _grid[x][y] = Square::Missed;
+        case GridSquare::None: // MISS
+            _grid[x][y] = GridSquare::Missed;
+            res = AttackResult::Missed;
             logging::info("Attack {}{}, missed!", char(y + 'a'), x);
             break;
-        case Square::Ship: // HIT
+        case GridSquare::Ship: // HIT
             _hits++;
-            _grid[x][y] = Square::Hit;
+            _grid[x][y] = GridSquare::Hit;
             GetShip(x, y).remainingSize--;
+            res = AttackResult::Hit;
 
             logging::info("Attack {}{}, successful!", char(y + 'a'), x);
+            // Check if ship is destroyed
             if (GetShip(x, y).remainingSize == 0) {
                 logging::info("Ship destroyed!");
                 InsertShipMargin(_grid, GetShip(x, y));
+                res = AttackResult::Destroyed;
             }
             break;
-        default:
+        default: // invalid position
             logging::info("Attack {}{}, is invalid, that position has been already hit!", char(y + 'a'), x);
-            return false;
+            res = AttackResult::InvalidPos;
     }
-    return true;
+    return res;
 }
 
-bool Player::Attack(Pos pos) noexcept {
+Player::AttackResult Player::Attack(Pos pos) noexcept {
     return Attack(pos.x, pos.y);
 }
 
-std::uint32_t Player::GetHits() const noexcept {
+Rules::Hits Player::GetHits() const noexcept {
     return _hits;
 }
 
 bool Player::HasLost() const noexcept {
-    return GetHits() == MAX_HITS;
+    return GetHits() == Rules::MAX_HITS;
 }
 
-const Player::Grid& Player::GetGrid() const noexcept {
+const Grid& Player::GetGrid() const noexcept {
     return _grid;
 }
 
@@ -90,6 +96,6 @@ void Player::InsertShipMargin(Grid& grid, const ShipData& ship) noexcept {
 
     for (std::size_t i = startX; i < endX; i++)
         for (std::size_t j= startY; j < endY; j++)
-            if (grid[i][j] == Square::None)
-                grid[i][j] = Square::Missed;
+            if (grid[i][j] == GridSquare::None)
+                grid[i][j] = GridSquare::Missed;
 }

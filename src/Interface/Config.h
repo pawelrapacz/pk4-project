@@ -19,11 +19,6 @@ namespace Battleships {
     constexpr int MARGIN_H3 = FONT_SIZE_H3 * MARGIN_RATIO;
     constexpr int MARGIN_TEXT = FONT_SIZE * MARGIN_RATIO;
 
-    constexpr auto GRID_SIZE = 10uz;
-    constexpr int GRID_SQUARE_WIDTH = 40;
-    constexpr int GRID_WIDTH = GRID_SIZE * GRID_SQUARE_WIDTH;
-    constexpr int GRID_WIDTH_EXTRA = GRID_WIDTH + GRID_SQUARE_WIDTH;
-
     constexpr int OFFSET_H1 = FONT_SIZE_H1 + MARGIN_H1;
     constexpr int OFFSET_H2 = FONT_SIZE_H2 + MARGIN_H2;
     constexpr int OFFSET_H3 = FONT_SIZE_H3 + MARGIN_H3;
@@ -53,5 +48,9 @@ namespace Battleships {
         constexpr Color lightred_t = make_transparent(lightred);
         constexpr Color gray_t = make_transparent(gray);
         constexpr Color lightgray_t = make_transparent(lightgray);
+
+        constexpr Color ship = gray;
+        constexpr Color missed = black;
+        constexpr Color hit = red;
     }
 }

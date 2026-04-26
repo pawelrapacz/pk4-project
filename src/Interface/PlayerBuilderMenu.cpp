@@ -50,7 +50,7 @@ void PlayerBuilderMenu::OnUpdate() {
     }
     
     if (auto pos = _ghnd.GetClick()) {
-        if (_bld.GetGrid()[pos.value().x][pos.value().y] == Square::Ship)
+        if (_bld.GetGrid()[pos.value().x][pos.value().y] == GridSquare::Ship)
             _bld.RemoveShip(pos.value());
         else
             _bld.TryInsertShip(pos.value(), _ort);
@@ -73,25 +73,27 @@ void PlayerBuilderMenu::Draw() const noexcept {
 }
 
 
-void PlayerBuilderMenu::DrawShip(Player::ShipSize size) const noexcept {
-    float innerSize = GRID_SQUARE_WIDTH * 0.7f;
-    float innerOffset = (GRID_SQUARE_WIDTH-innerSize)/2;
+void PlayerBuilderMenu::DrawShip(ShipSize size) const noexcept {
+    constexpr auto SQW = GridView::GRID_SQUARE_WIDTH;
+
+    float innerSize = SQW * 0.7f;
+    float innerOffset = (SQW-innerSize)/2;
 
     if (_ort == PlayerBuilder::ShipOrientation::Horizontal) {
-        float x = _nextShipView.x + (_nextShipView.width - GRID_SQUARE_WIDTH * size) / 2;
-        float y = _nextShipView.y + (_nextShipView.height - GRID_SQUARE_WIDTH) / 2;
+        float x = _nextShipView.x + (_nextShipView.width - SQW * size) / 2;
+        float y = _nextShipView.y + (_nextShipView.height - SQW) / 2;
         Rectangle inner {x + innerOffset, y + innerOffset, innerSize, innerSize};
-        for (Player::ShipSize i {}; i < size; i++) {
-            DrawRectangleRec(inner, Colors::gray);
-            inner.x += GRID_SQUARE_WIDTH;
+        for (ShipSize i {}; i < size; i++) {
+            DrawRectangleRec(inner, Colors::ship);
+            inner.x += SQW;
         }
     } else {
-        float x = _nextShipView.x + (_nextShipView.width - GRID_SQUARE_WIDTH) / 2;
-        float y = _nextShipView.y + (_nextShipView.height - GRID_SQUARE_WIDTH * size) / 2;
+        float x = _nextShipView.x + (_nextShipView.width - SQW) / 2;
+        float y = _nextShipView.y + (_nextShipView.height - SQW * size) / 2;
         Rectangle inner {x + innerOffset, y + innerOffset, innerSize, innerSize};
-        for (Player::ShipSize i {}; i < size; i++) {
-            DrawRectangleRec(inner, Colors::gray);
-            inner.y += GRID_SQUARE_WIDTH;
+        for (ShipSize i {}; i < size; i++) {
+            DrawRectangleRec(inner, Colors::ship);
+            inner.y += SQW;
         }
     }
 }

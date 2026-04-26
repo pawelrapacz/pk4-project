@@ -26,8 +26,8 @@ namespace Battleships {
     private:
         void EnemyTurn(); // async
         // player turn doesn't have to be async
-        void ResolvePlayerTurn(Player::Pos) noexcept;
-        void ResolveEnemyTurn(Player::Pos) noexcept;
+        void ResolvePlayerTurn(Pos) noexcept;
+        void ResolveEnemyTurn(Pos) noexcept;
 
     private:
         Application& _app;
@@ -36,7 +36,7 @@ namespace Battleships {
         
         Player _plr;
         std::unique_ptr<Enemy> _enm;
-        std::future<Player::Pos> _enmAttackFuture;
+        std::future<Pos> _enmAttackFuture;
         std::uint32_t _turn = 0u;
         bool _playing = true;
     };

@@ -4,7 +4,6 @@
 #include <nlohmann/json.hpp>
 
 #include <random>
-#include "Interface/Config.h"
 #include "Player.h"
 
 using namespace Battleships;
@@ -12,22 +11,22 @@ using namespace Battleships;
 extern std::mt19937 mt; // defined in Player.cpp
 static std::uniform_int_distribution<std::size_t> dist(0, 9);
 
-SimpleEnemy::Pos SimpleEnemy::MakeTurn(const Grid& grid [[maybe_unused]]) const noexcept  {
+Pos SimpleEnemy::MakeTurn(const Grid& grid [[maybe_unused]]) const noexcept  {
     return {dist(mt), dist(mt)};
 }
 
 
-nlohmann::json GridToJson(const Player::Grid& grid) {
+nlohmann::json GridToJson(const Grid& grid) {
     nlohmann::json jgrid = nlohmann::json::array();
 
-    for (std::size_t i {}; i < Player::GRID_SIZE; i++) {
+    for (std::size_t i {}; i < GRID_SIZE; i++) {
         nlohmann::json row = nlohmann::json::array();
-        for (std::size_t j {}; j < Player::GRID_SIZE; j++) {
+        for (std::size_t j {}; j < GRID_SIZE; j++) {
             switch (grid[i][j]) {
-                case Square::Hit:
+                case GridSquare::Hit:
                     row.push_back("H");
                     break;
-                case Square::Missed:
+                case GridSquare::Missed:
                     row.push_back("M");
                     break;
                 default:
@@ -42,7 +41,7 @@ nlohmann::json GridToJson(const Player::Grid& grid) {
 }
 
 
-AIEnemy::Pos AIEnemy::MakeTurn(const Grid& grid [[maybe_unused]]) const {
+Pos AIEnemy::MakeTurn(const Grid& grid [[maybe_unused]]) const {
     httplib::Client client("http://localhost:11434");
 
     std::string prompt = "You are playing battleship game. With the given table make the best possible move, the table contains values like \".\" (empty posible to attack), \"M\" (already attacked - missed), \"H\" (already attacked hit), these values represent points. You can only attack empty points. The given table is in json format: ";

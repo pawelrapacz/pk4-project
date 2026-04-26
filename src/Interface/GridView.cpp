@@ -24,7 +24,7 @@ GridView::GridView(float x, float y, const char* label, float size)
 }
 
 
-std::optional<Player::Pos> GridView::GetClick() const noexcept {
+std::optional<Pos> GridView::GetClick() const noexcept {
     // check click
     if (not IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         return std::nullopt;
@@ -49,11 +49,12 @@ std::optional<Player::Pos> GridView::GetClick() const noexcept {
 }
 
 
-void GridView::Draw(const Player::Grid& grid) const noexcept {
+void GridView::Draw(const Grid& grid) const noexcept {
     DrawText(_label, _lx, _ly, FONT_SIZE_H3, Colors::text);
     DrawGridLabels();
     DrawGrid(grid);
 }
+
 
 float GridView::GetWidth() const noexcept {
     return _size * (GRID_SIZE + 1);
@@ -62,8 +63,6 @@ float GridView::GetWidth() const noexcept {
 float GridView::GetHeight() const noexcept {
     return GetWidth() + FONT_SIZE_H3;
 }
-
-
 
 void GridView::DrawGridLabels() const noexcept {
     constexpr auto LABEL_H = std::to_array({"a", "b", "c", "d", "e", "f","g", "h", "i", "j"});
@@ -92,7 +91,7 @@ void GridView::DrawGridLabels() const noexcept {
     }
 }
 
-void GridView::DrawGrid(const Player::Grid& grid) const noexcept {
+void GridView::DrawGrid(const Grid& grid) const noexcept {
     float innerSize = _size * 0.7f;
     float innerOffset = (_size-innerSize)/2;
 
@@ -106,15 +105,15 @@ void GridView::DrawGrid(const Player::Grid& grid) const noexcept {
             DrawRectangleLinesEx(outer, 1.3f, Colors::white);
 
             switch (grid[i][j]) {
-                case Square::Ship:
-                    DrawRectangleRec(inner, Colors::gray);
+                case GridSquare::Ship:
+                    DrawRectangleRec(inner, Colors::ship);
                     break;
-                case Square::Hit:
-                    DrawRectangleRec(inner, Colors::red);
+                case GridSquare::Hit:
+                    DrawRectangleRec(inner, Colors::hit);
                     break;
-                case Square::Missed:
+                case GridSquare::Missed:
                     // DrawRectangleRec(inner, Colors::lightblue);
-                    DrawCircle(outer.x + outer.width / 2, outer.y + outer.height / 2, 3, Colors::black);
+                    DrawCircle(outer.x + outer.width / 2, outer.y + outer.height / 2, 3, Colors::missed);
                     break;
                 default:
                     break;

@@ -16,7 +16,7 @@ namespace Battleships {
         void Draw() const noexcept override;
 
     private:
-        void DrawShip(Player::ShipSize) const noexcept;
+        void DrawShip(ShipSize) const noexcept;
 
     private:
         GridView _ghnd;

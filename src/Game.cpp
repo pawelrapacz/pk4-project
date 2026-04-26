@@ -58,8 +58,8 @@ std::uint32_t Game::GetTurn() const noexcept {
     return _turn % 2;
 }
 
-void Game::ResolvePlayerTurn(Player::Pos pos) noexcept {
-    if (_enm->Attack(pos))
+void Game::ResolvePlayerTurn(Pos pos) noexcept {
+    if (_enm->Attack(pos) == Player::AttackResult::Missed)
         _turn++;
 
     if (_enm->HasLost()) {
@@ -70,8 +70,8 @@ void Game::ResolvePlayerTurn(Player::Pos pos) noexcept {
     }
 }
 
-void Game::ResolveEnemyTurn(Player::Pos pos) noexcept {
-    if (_plr.Attack(pos))
+void Game::ResolveEnemyTurn(Pos pos) noexcept {
+    if (_plr.Attack(pos) == Player::AttackResult::Missed)
         _turn++;
 
     if (_plr.HasLost()) {

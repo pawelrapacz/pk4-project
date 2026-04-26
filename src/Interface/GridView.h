@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Interface/Config.h"
 #include "Player.h"
 
 #include <optional>
@@ -9,16 +8,21 @@ namespace Battleships {
 
     class GridView {
     public:
+        static constexpr int GRID_SQUARE_WIDTH = 40;
+        static constexpr int GRID_WIDTH = GRID_SIZE * GRID_SQUARE_WIDTH;
+        static constexpr int GRID_WIDTH_EXTRA = GRID_WIDTH + GRID_SQUARE_WIDTH;
+
+    public:
         GridView(float x, float y, const char* label, float size = GRID_SQUARE_WIDTH);
 
-        std::optional<Player::Pos> GetClick() const noexcept;
-        void Draw(const Player::Grid&) const noexcept;
+        std::optional<Pos> GetClick() const noexcept;
+        void Draw(const Grid&) const noexcept;
         float GetWidth() const noexcept;
         float GetHeight() const noexcept;
 
     private:
         void DrawGridLabels() const noexcept;
-        void DrawGrid(const Player::Grid&) const noexcept;
+        void DrawGrid(const Grid&) const noexcept;
 
     private:
         static constexpr float RATIO = 0.7f;
