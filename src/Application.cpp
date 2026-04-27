@@ -5,6 +5,7 @@
 
 #include <raylib.h>
 #include <logging/logging.h>
+#include <logging/raylib_adapter.h>
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -18,12 +19,14 @@ using namespace Battleships;
 void Application::Run() {
 #ifndef DEBUG // remove in Release
     SetTraceLogLevel(LOG_NONE);
-#endif 
+#endif
     // logging removers below functions in Release
     // with the LOGGING_DISABLE macro (see CMakeLists.txt)
-    logging::to_file();
     logging::set_file("Battleships.log");
-
+    logging::to_file();
+    // use own logging system
+    SetTraceLogCallback(logging::raylib_callback);
+    
     logging::info("Initializing App");
 
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, TITLE);

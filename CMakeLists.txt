@@ -94,6 +94,7 @@ enable_testing()
 include("${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake")
 
 # libs
+option(LOGGING_RAYLIB_ADAPTER "Enable logging raylib adapter" ON)
 add_subdirectory(lib/logging)
 
 # Project

@@ -18,12 +18,7 @@
 // configuration macros:
 // LOGGING_DISABLE
 // LOGGING_NO_COLORS
-// LOGGING_ALWAYS_USE_DEBUG
 
-
-#if !defined(NDEBUG) || defined(LOGGING_ALWAYS_USE_DEBUG)
-    #define LOGGING_USE_DEBUG_
-#endif
 
 namespace logging {
 
@@ -156,9 +151,7 @@ namespace logging {
 
     template<typename Tp>
     inline void debug(const Tp& msg [[maybe_unused]]) {
-#ifdef LOGGING_USE_DEBUG_
         log(level::debug, msg);
-#endif
     }
 
     template<typename Tp>
@@ -187,10 +180,8 @@ namespace logging {
     }
 
     template<typename... Args>
-    inline void debug(std::format_string<Args...> fmt [[maybe_unused]], Args&&... args [[maybe_unused]]) {
-#ifdef LOGGING_USE_DEBUG_
+    inline void debug(std::format_string<Args...> fmt, Args&&... args) {
         log(level::debug, fmt, std::forward<Args>(args)...);
-#endif
     }
 
     template<typename... Args>
@@ -265,6 +256,4 @@ namespace logging {
 
 #endif // LOGGING_DISABLE
 
-} // logging
-
-#undef LOGGING_USE_DEBUG_
+} // namespace logging

@@ -40,7 +40,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     httplib::httplib
-    logging
+    logging_raylib
     nlohmann_json::nlohmann_json
     raylib
 )
