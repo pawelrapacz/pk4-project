@@ -23,6 +23,18 @@ Game::Game(Application& app, std::unique_ptr<Enemy> enm, Player plr)
         logging::info("Initializing Game");
       }
 
+Game::~Game() {
+    logging::info("Closing game");
+    
+    // wait for std::future to finish its task
+    // prevents use after free (hopefully)
+    if (_enmAttackFuture.valid()) {
+        logging::info("Waiting for enemy attack to resolve");
+        _enmAttackFuture.wait();
+        logging::info("Enemy attack resolved");
+    }
+}
+
 
 void Game::OnUpdate() {
     static uint32_t lastTurn {};
@@ -58,7 +70,7 @@ std::uint32_t Game::GetTurn() const noexcept {
     return _turn % 2;
 }
 
-void Game::ResolvePlayerTurn(Pos pos) noexcept {
+void Game::ResolvePlayerTurn(Pos pos) {
     if (_enm->Attack(pos) == Player::AttackResult::Missed)
         _turn++;
 
@@ -70,7 +82,7 @@ void Game::ResolvePlayerTurn(Pos pos) noexcept {
     }
 }
 
-void Game::ResolveEnemyTurn(Pos pos) noexcept {
+void Game::ResolveEnemyTurn(Pos pos) {
     if (_plr.Attack(pos) == Player::AttackResult::Missed)
         _turn++;
 
@@ -88,8 +100,8 @@ void Game::EnemyTurn() {
     if (not _enmAttackFuture.valid()) {
         // create new attack future
         // TODO: Make it thread safe (_enm access, read/write)
-        _enmAttackFuture = std::async(std::launch::async, [enm = _enm.get(), grid = _plr.GetGrid()]() {
-            return enm->MakeTurn(grid);
+        _enmAttackFuture = std::async(std::launch::async, [this]() {
+            return this->_enm->MakeTurn(this->_plr.GetGrid());
         });
     } else if (_enmAttackFuture.wait_for(1ms) == std::future_status::ready) {
         // if ready, attack

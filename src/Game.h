@@ -17,6 +17,7 @@ namespace Battleships {
     class Game {
     public:
         Game(Application&, std::unique_ptr<Enemy>, Player = {});
+        ~Game();
 
         void OnUpdate();
         void Draw() const;
@@ -26,8 +27,8 @@ namespace Battleships {
     private:
         void EnemyTurn(); // async
         // player turn doesn't have to be async
-        void ResolvePlayerTurn(Pos) noexcept;
-        void ResolveEnemyTurn(Pos) noexcept;
+        void ResolvePlayerTurn(Pos);
+        void ResolveEnemyTurn(Pos);
 
     private:
         Application& _app;

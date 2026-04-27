@@ -8,7 +8,7 @@
 
 using namespace Battleships;
 
-extern std::mt19937 mt; // defined in Player.cpp
+thread_local extern std::mt19937 mt; // defined in Player.cpp
 static std::uniform_int_distribution<std::size_t> dist(0, 9);
 
 Pos SimpleEnemy::MakeTurn(const Grid& grid [[maybe_unused]]) const noexcept  {
