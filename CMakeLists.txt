@@ -37,12 +37,12 @@ function(target_sanitize target type)
         endif()
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         message("MSVC supports only address, kernel-address and fuzzer sanitization")
-        if (type MATHES "address|kernel-address|fuzzer")
+        if (type MATCHES "address|kernel-address|fuzzer")
             target_compile_options(${target} PRIVATE
                 $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:/fsanitize=${type}>
             )
             target_link_options(${target} PRIVATE
-                $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:/fsanitize=${type}>
+                /INCREMENTAL:NO
             )
         endif()
     endif() 
