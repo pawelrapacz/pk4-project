@@ -7,7 +7,11 @@
 #include <sstream>
 
 
-#define INITIALIZE()    logging::log_specs_ = {};\
+#define INITIALIZE()    logging::log_specs_.logLevel = logging::level::debug;\
+                        logging::log_specs_.toFile = false;\
+                        logging::log_specs_.toStdout = true;\
+                        logging::log_specs_.stream = &logging::default_stream;\
+                        logging::log_specs_.path = "logs/program.log";\
                         std::ostringstream str;\
                         std::string time = std::format("[{:%F %X}]", std::chrono::zoned_time(std::chrono::current_zone(), std::chrono::system_clock::now()));\
                         logging::set_stdout(str)

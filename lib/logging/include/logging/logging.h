@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <chrono>
+#include <mutex>
 #include <ostream>
 #include <string>
 #include <string_view>
@@ -39,6 +40,8 @@ namespace logging {
         bool toStdout = true;
         std::ostream* stream = &default_stream;
         std::filesystem::path path = "logs/program.log";
+        std::mutex fileMtx;
+        std::mutex streamMtx;
 
     private:
         std::ofstream file;
@@ -70,6 +73,10 @@ namespace logging {
         return level_styles[static_cast<std::size_t>(lvl)];
     }
 
+    inline bool should_flush_(level lvl) noexcept {
+        return lvl > level::warn;
+    }
+
     inline constexpr std::string_view get_level_name_(level lvl) noexcept {
         static constexpr auto level_names = std::to_array<std::string_view>({
             "DEBUG",
@@ -91,16 +98,21 @@ namespace logging {
         return std::format("[{:%F %X}] {} {}", time, get_level_name_(lvl), msg);
     }
 
-    inline void write_to_console_(styles::style style [[maybe_unused]], const std::string& msg) {
+    inline void write_to_console_(level lvl, const std::string& msg) {
+        std::lock_guard lock(log_specs_.streamMtx);
+        
 #ifndef LOGGING_NO_COLORS
-        get_log_stream_() << styles::apply_seq(style) << msg << styles::reset_seq() << '\n';
+        get_log_stream_() << styles::apply_seq(get_style_(lvl)) << msg << styles::reset_seq() << '\n';
 #else
         get_log_stream_() << msg << "\n";
 #endif
-        get_log_stream_().flush();
+        if (should_flush_(lvl))
+            get_log_stream_().flush();
     }
 
-    inline void write_to_file_(const std::string& msg) {
+    inline void write_to_file_(level lvl, const std::string& msg) {
+        std::lock_guard lock(log_specs_.fileMtx);
+
         if (!get_log_file_().is_open()) {
             if (log_specs_.path.has_parent_path())
                 std::filesystem::create_directories(log_specs_.path.parent_path());
@@ -109,7 +121,9 @@ namespace logging {
         }
 
         get_log_file_() << msg << '\n';
-        get_log_file_().flush();
+        
+        if (should_flush_(lvl))
+            get_log_file_().flush();
     }
 
 
@@ -143,10 +157,10 @@ namespace logging {
         std::string logMsg = create_log_message_(lvl, msg);
 
         if (log_specs_.toStdout)
-            write_to_console_(get_style_(lvl), logMsg);
+            write_to_console_(lvl, logMsg);
 
         if (log_specs_.toFile)
-            write_to_file_(logMsg);
+            write_to_file_(lvl, logMsg);
     }
 
     template<typename Tp>
