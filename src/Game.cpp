@@ -101,7 +101,7 @@ void Game::EnemyTurn() {
         // create new attack future
         // TODO: Make it thread safe (_enm access, read/write)
         _enmAttackFuture = std::async(std::launch::async, [this]() {
-            return this->_enm->MakeTurn(this->_plr.GetGrid());
+            return this->_enm->MakeTurn(Player::RemoveShips(this->_plr.GetGrid()));
         });
     } else if (_enmAttackFuture.wait_for(1ms) == std::future_status::ready) {
         // if ready, attack

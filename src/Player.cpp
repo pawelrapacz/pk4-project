@@ -33,7 +33,7 @@ Player::AttackResult Player::Attack(std::size_t x, std::size_t y) noexcept {
         case GridSquare::None: // MISS
             _grid[x][y] = GridSquare::Missed;
             res = AttackResult::Missed;
-            logging::info("Attack {}{}, missed!", char(y + 'a'), x);
+            logging::info("Attack {}{}, missed!", char(x + 'a'), y + 1);
             break;
         case GridSquare::Ship: // HIT
             _hits++;
@@ -41,7 +41,7 @@ Player::AttackResult Player::Attack(std::size_t x, std::size_t y) noexcept {
             GetShip(x, y).remainingSize--;
             res = AttackResult::Hit;
 
-            logging::info("Attack {}{}, successful!", char(y + 'a'), x);
+            logging::info("Attack {}{}, successful!", char(x + 'a'), y + 1);
             // Check if ship is destroyed
             if (GetShip(x, y).remainingSize == 0) {
                 logging::info("Ship destroyed!");

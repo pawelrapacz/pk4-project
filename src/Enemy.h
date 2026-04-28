@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Player.h"
-#include <concepts>
+#include <optional>
 
 namespace Battleships {
 
@@ -13,10 +13,16 @@ namespace Battleships {
     };
 
     class SimpleEnemy : public Enemy {
-        Pos MakeTurn(const Grid&) const noexcept override;
+    public:
+        struct Vec {int x, y;};
+        Pos MakeTurn(const Grid&) const override;
+    protected:
+        std::optional<Pos> SearchPossible(const Grid& grid, Pos pos) const;
+        std::optional<Pos> SmartMove(const Grid& grid) const;
+        std::optional<Pos> CheckDirection(const Grid& grid, Pos pos, Vec dir) const;
     };
 
-    class AIEnemy : public Enemy {
+    class AIEnemy : public SimpleEnemy {
         Pos MakeTurn(const Grid&) const override;
     };
 

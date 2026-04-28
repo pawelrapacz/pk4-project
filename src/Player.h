@@ -86,9 +86,6 @@ namespace Battleships {
         };
         using ShipDataGrid = std::array<std::array<std::shared_ptr<ShipData>, GRID_SIZE>, GRID_SIZE>;
     
-    private:
-        static void InsertShipMargin(Grid&, const ShipData&) noexcept;
-        
         // normalizes the value to be in bounds of Grid
         // i.e. if you do x -= 1; you might get uint32_t(-1) which is wrong
         static constexpr std::size_t nmlz(std::size_t val, std::size_t cmp = GRID_SIZE) noexcept {
@@ -98,6 +95,10 @@ namespace Battleships {
                 return 0u;
         }
 
+
+    private:
+        static void InsertShipMargin(Grid&, const ShipData&) noexcept;
+        
         Player(Grid, ShipDataGrid);
         
         ShipData& GetShip(std::size_t x, std::size_t y);
