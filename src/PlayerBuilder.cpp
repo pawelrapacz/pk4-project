@@ -15,7 +15,6 @@
 using namespace Battleships;
 
 // global random
-// TODO: make thread safe
 thread_local std::mt19937 mt(std::random_device{}());
 
 Player PlayerBuilder::BuildRandom() {

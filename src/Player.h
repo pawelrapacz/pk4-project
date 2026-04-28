@@ -78,14 +78,16 @@ namespace Battleships {
         bool HasLost() const noexcept;
         
 
-    protected:
+    private:
         struct ShipData {
             ShipSize size;
             Pos start, end;
             ShipSize remainingSize = size;
         };
+
         using ShipDataGrid = std::array<std::array<std::shared_ptr<ShipData>, GRID_SIZE>, GRID_SIZE>;
     
+    private:
         // normalizes the value to be in bounds of Grid
         // i.e. if you do x -= 1; you might get uint32_t(-1) which is wrong
         static constexpr std::size_t nmlz(std::size_t val, std::size_t cmp = GRID_SIZE) noexcept {
@@ -95,11 +97,9 @@ namespace Battleships {
                 return 0u;
         }
 
-
-    private:
         static void InsertShipMargin(Grid&, const ShipData&) noexcept;
         
-        Player(Grid, ShipDataGrid);
+        Player(Grid, ShipDataGrid); // for PlayerBuilder
         
         ShipData& GetShip(std::size_t x, std::size_t y);
         const ShipData& GetShip(std::size_t x, std::size_t y) const;

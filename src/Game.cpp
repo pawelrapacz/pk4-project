@@ -99,9 +99,10 @@ void Game::EnemyTurn() {
 
     if (not _enmAttackFuture.valid()) {
         // create new attack future
-        // TODO: Make it thread safe (_enm access, read/write)
-        _enmAttackFuture = std::async(std::launch::async, [this]() {
-            return this->_enm->MakeTurn(Player::RemoveShips(this->_plr.GetGrid()));
+        _enmAttackFuture = std::async(std::launch::async, [this, snapshot = Player::RemoveShips(_plr.GetGrid())]() {
+            // MakeTurn is thread safe (stateless)
+            // it uses just the grid snapshot
+            return this->_enm->MakeTurn(snapshot);
         });
     } else if (_enmAttackFuture.wait_for(1ms) == std::future_status::ready) {
         // if ready, attack

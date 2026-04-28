@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Player.h"
-#include <optional>
 
 namespace Battleships {
 
@@ -9,20 +8,23 @@ namespace Battleships {
     public:
         Enemy() = default;
         virtual ~Enemy() = default;
+        
         virtual Pos MakeTurn(const Grid&) const = 0;
     };
 
     class SimpleEnemy : public Enemy {
     public:
-        struct Vec {int x, y;};
+        static Pos MakeTurnImpl(const Grid&);
+        
+        // same as Impl
         Pos MakeTurn(const Grid&) const override;
-    protected:
-        std::optional<Pos> SearchPossible(const Grid& grid, Pos pos) const;
-        std::optional<Pos> SmartMove(const Grid& grid) const;
-        std::optional<Pos> CheckDirection(const Grid& grid, Pos pos, Vec dir) const;
     };
 
-    class AIEnemy : public SimpleEnemy {
+    class AIEnemy : public Enemy {
+    public:
+        static Pos MakeTurnImpl(const Grid&);
+
+        // same as Impl
         Pos MakeTurn(const Grid&) const override;
     };
 
