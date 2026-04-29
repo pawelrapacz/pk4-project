@@ -30,6 +30,20 @@ void Application::Run() {
     logging::info("Initializing App");
 
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, TITLE);
+
+    // load icons
+    auto icons = std::to_array<Image>({
+        LoadImage("res/img/logo16.png"),
+        LoadImage("res/img/logo32.png"),
+        LoadImage("res/img/logo64.png"),
+        LoadImage("res/img/logo128.png"),
+        LoadImage("res/img/logo256.png"),
+        LoadImage("res/img/logo.png"),
+    });
+
+    SetWindowIcons(icons.data(), icons.size());
+    for (Image i : icons) UnloadImage(i);
+
     SetMenu<MainMenu>();
     
 #if defined(PLATFORM_WEB)

@@ -80,6 +80,9 @@ if (APPLE)
 endif()
 
 if (WIN32)
+    target_sources(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/res/Battleships.rc
+    )
     set_target_properties(${PROJECT_NAME} PROPERTIES 
         # Windows: GUI for Release, MinSizeRel and RelWithDebInfo builds, console in Debug
         WIN32_EXECUTABLE $<$<NOT:$<CONFIG:Debug>>:TRUE>

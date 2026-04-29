@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Battleships
+Exec=Battleships
+Icon=img/logo.png
+Terminal=false
+Categories=Game;
