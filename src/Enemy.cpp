@@ -177,7 +177,7 @@ static inline nlohmann::json GridToJson(const Grid& grid) {
 
 Pos AIEnemy::MakeTurnImpl(const Grid& grid) {
     try {
-        httplib::Client client("http://loecalhost:11434");
+        httplib::Client client("http://localhost:11434");
 
         std::string prompt = "You are playing battleship game. With the given table make the best possible move, the table contains values like \".\" (empty posible to attack), \"M\" (already attacked - missed), \"H\" (already attacked hit), these values represent points. You can only attack empty points. The given table is in json format: ";
         prompt += GridToJson(grid).dump();

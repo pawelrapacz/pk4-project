@@ -5,7 +5,8 @@
 #include "Interface/Menu.h"
 #include "Interface/GridView.h"
 #include "Interface/Button.h"
-#include "raylib.h"
+
+#include <raylib.h>
 
 namespace Battleships {
     class PlayerBuilderMenu : public Menu {

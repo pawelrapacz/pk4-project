@@ -1,10 +1,12 @@
 #include "MainMenu.h"
+
 #include "Application.h"
 #include "Config.h"
 #include "Enemy.h"
 #include "Interface/Button.h"
 #include "Interface/PlayerBuilderMenu.h"
 
+#include <raylib.h>
 #include <logging/logging.h>
 
 using namespace Battleships;

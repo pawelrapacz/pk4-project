@@ -1,7 +1,9 @@
 #include "Game.h"
+
 #include "Application.h"
 #include "Interface/GameOverMenu.h"
 #include "Player.h"
+#include "Enemy.h"
 #include "Interface/GridView.h"
 
 #include <raylib.h>

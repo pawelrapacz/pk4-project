@@ -3,6 +3,7 @@
 #include "Interface/Menu.h"
 #include "Game.h"
 #include "Player.h"
+#include "Enemy.h"
 
 #include <concepts>
 #include <memory>

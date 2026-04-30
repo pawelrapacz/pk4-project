@@ -1,7 +1,9 @@
 #include "Application.h"
-#include "Enemy.h"
+
 #include "Interface/Config.h"
 #include "Interface/MainMenu.h"
+#include "Game.h"
+#include "Enemy.h"
 
 #include <raylib.h>
 #include <logging/logging.h>

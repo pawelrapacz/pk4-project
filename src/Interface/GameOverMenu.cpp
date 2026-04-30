@@ -1,9 +1,11 @@
 #include "GameOverMenu.h"
+
+#include "Config.h"
 #include "Application.h"
 #include "MainMenu.h"
 #include "Interface/Button.h"
-#include "Config.h"
 
+#include <raylib.h>
 #include <logging/logging.h>
 
 using namespace Battleships;

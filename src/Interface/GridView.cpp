@@ -1,8 +1,10 @@
 #include "GridView.h"
+
 #include "Interface/Config.h"
 #include "Player.h"
 
 #include <raylib.h>
+#include <logging/logging.h>
 
 #include <array>
 #include <optional>
