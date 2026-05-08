@@ -31,6 +31,9 @@ PRIVATE
     main.cpp
 )
 
+# copy logos etc.
+file(COPY ${CMAKE_SOURCE_DIR}/res/img DESTINATION ${CMAKE_BINARY_DIR}/res)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}
@@ -100,7 +103,6 @@ endif()
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     # std
     <algorithm>
-    <algorithm>
     <array>
     <atomic>
     <cassert>
@@ -127,7 +129,18 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
 
     # Dependencies
     <httplib.h>
+    <logging/adapters/raylib.h>
     <logging/logging.h>
     <nlohmann/json.hpp>
     <raylib.h>
+)
+
+# download gemma4:e2b
+set(MODELS_DIR ${CMAKE_BINARY_DIR}/models)
+file(
+    DOWNLOAD
+    https://huggingface.co/ggml-org/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q8_0.gguf
+    ${MODELS_DIR}/gemma-4-E2B-it-Q8_0.gguf
+    SHOW_PROGRESS
+    EXPECTED_HASH SHA256=e049411c01fb7a81161768c52e38828970e55a64e22738957adcbe51d20f1c8e
 )

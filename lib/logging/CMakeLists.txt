@@ -1,4 +1,5 @@
 option(LOGGING_RAYLIB_ADAPTER "Enable logging raylib adapter" OFF)
+option(LOGGING_LLAMA_ADAPTER "Enable logging llama.cpp adapter" OFF)
 
 #  standard version
 add_library(logging INTERFACE
@@ -12,7 +13,7 @@ target_include_directories(logging INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include
 # enable raylib adapter
 if (LOGGING_RAYLIB_ADAPTER)
     add_library(logging_raylib INTERFACE
-        include/logging/raylib_adapter.h
+        include/logging/adapters/raylib.h
     )
     
     target_compile_features(logging_raylib INTERFACE cxx_std_23)
@@ -20,6 +21,19 @@ if (LOGGING_RAYLIB_ADAPTER)
     
     target_compile_definitions(logging_raylib INTERFACE LOGGING_RAYLIB_ADAPTER)
     target_link_libraries(logging_raylib INTERFACE logging raylib)
+endif()
+
+# enable llama adapter
+if (LOGGING_LLAMA_ADAPTER)
+    add_library(logging_llama INTERFACE
+        include/logging/adapters/llama.h
+    )
+
+    target_compile_features(logging_llama INTERFACE cxx_std_23)
+    target_include_directories(logging_llama INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+    target_compile_definitions(logging_llama INTERFACE LOGGING_LLAMA_ADAPTER)
+    target_link_libraries(logging_llama INTERFACE logging llama)
 endif()
 
 

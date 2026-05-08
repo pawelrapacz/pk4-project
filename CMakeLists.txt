@@ -9,7 +9,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 set(
-    CMAKE_CXX_STANDARD 23
     CMAKE_CXX_STANDARD_REQUIRED ON
     CMAKE_CXX_EXTENSIONS OFF
 )
@@ -57,19 +56,21 @@ FetchContent_Declare(
     raylib
     GIT_REPOSITORY https://github.com/raysan5/raylib.git
     GIT_TAG ${RAYLIB_VERSION}
+    GIT_SHALLOW TRUE
     FIND_PACKAGE_ARGS ${RAYLIB_VERSION}
 )
 
 # cpp-httplib
-set(HTTP_VERSION 0.43.1)
+set(HTTP_VERSION 0.43.3)
 FetchContent_Declare(
     httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
     GIT_TAG v${HTTP_VERSION}
+    GIT_SHALLOW TRUE
     FIND_PACKAGE_ARGS ${HTTP_VERSION}
 )
 
-# json
+# jsongit
 # using URL not GIT_REPOSITORY because the repo is quite hevy (236 MiB)
 set(NLOHMANN_JSON_VERSION 3.12.0)
 FetchContent_Declare(
@@ -79,23 +80,36 @@ FetchContent_Declare(
     FIND_PACKAGE_ARGS ${NLOHMANN_JSON_VERSION}
 )
 
+# llama.cpp
+FetchContent_Declare(
+    llama
+    GIT_REPOSITORY https://github.com/ggml-org/llama.cpp
+    GIT_TAG b9080
+    GIT_SHALLOW TRUE
+    FIND_PACKAGE_ARGS
+)
+
 # doctest
 set(DOCTEST_VERSION 2.5.2)
 FetchContent_Declare(
     doctest
     GIT_REPOSITORY https://github.com/doctest/doctest.git
     GIT_TAG v${DOCTEST_VERSION}
+    GIT_SHALLOW TRUE
     FIND_PACKAGE_ARGS ${DOCTEST_VERSION}
 )
 
-FetchContent_MakeAvailable(raylib nlohmann_json httplib doctest)
+set(LLAMA_BUILD_COMMON TRUE)
+FetchContent_MakeAvailable(raylib nlohmann_json httplib llama doctest)
 
 enable_testing()
 include("${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake")
 
 # libs
-option(LOGGING_RAYLIB_ADAPTER "Enable logging raylib adapter" ON)
+option(LOGGING_RAYLIB_ADAPTER "" ON)
+option(LOGGING_LLAMA_ADAPTER "" ON)
 add_subdirectory(lib/logging)
+add_subdirectory(lib/llm)
 
 # Project
 add_subdirectory(src)

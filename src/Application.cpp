@@ -5,8 +5,8 @@
 #include "Interface/Config.h"
 #include "Interface/MainMenu.h"
 
+#include <logging/adapters/raylib.h>
 #include <logging/logging.h>
-#include <logging/raylib_adapter.h>
 #include <raylib.h>
 
 #if defined(PLATFORM_WEB)

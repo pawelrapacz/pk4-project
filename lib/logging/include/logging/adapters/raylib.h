@@ -2,13 +2,11 @@
     #error "To use this header file enable the LOGGING_RAYLIB_ADAPTER option."
 #endif
 
-
 #include <logging/logging.h>
 #include <raylib.h>
 
 #include <cstdarg>
 #include <cstdio>
-
 
 namespace logging {
 

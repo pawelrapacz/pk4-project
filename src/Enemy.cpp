@@ -25,7 +25,8 @@ thread_local static std::uniform_int_distribution<std::size_t> dist(0, GRID_SIZE
 
 
 static bool InBounds(Pos pos) noexcept {
-    return pos.x >= 0 && pos.x < GRID_SIZE && pos.y >= 0 && pos.y < GRID_SIZE;
+    // pos.x >= 0 and pos.y >= 0 always true (std::size_t)
+    return pos.x < GRID_SIZE && pos.y < GRID_SIZE;
 }
 
 static inline Pos RandomMove(const Grid& grid) noexcept {
