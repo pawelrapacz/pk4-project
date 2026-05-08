@@ -1,5 +1,7 @@
 #include "Application.h"
 
+// clang-format off
+
 #if defined(_WIN32) && !defined(DEBUG) // only Release builds
     #include <Windows.h>
 

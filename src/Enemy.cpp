@@ -1,52 +1,54 @@
 #include "Enemy.h"
 
 #include <httplib.h>
-#include <nlohmann/json.hpp>
 #include <logging/logging.h>
+#include <nlohmann/json.hpp>
 
+#include <algorithm>
+#include <chrono>
+#include <optional>
 #include <random>
 #include <thread>
-#include <chrono>
-#include <algorithm>
-#include <optional>
 #include <vector>
 
 
 using namespace Battleships;
 
-struct Vec {int x, y;};
+struct Vec {
+    int x, y;
+};
 
 
 thread_local extern std::mt19937 mt; // defined in PlayerBuilder.cpp
-thread_local static std::uniform_int_distribution<std::size_t> dist(0, GRID_SIZE - 1);
+thread_local static std::uniform_int_distribution<std::size_t> dist(0, GRID_SIZE
+                                                                           - 1);
 
 
 static bool InBounds(Pos pos) noexcept {
-    return pos.x >= 0 && pos.x < GRID_SIZE &&
-           pos.y >= 0 && pos.y < GRID_SIZE;
+    return pos.x >= 0 && pos.x < GRID_SIZE && pos.y >= 0 && pos.y < GRID_SIZE;
 }
 
 static inline Pos RandomMove(const Grid& grid) noexcept {
     logging::debug("Making random move");
     Pos pos;
-    
+
     do {
         pos.x = dist(mt);
         pos.y = dist(mt);
     } while (grid[pos.x][pos.y] != GridSquare::None);
-    
+
     logging::debug("Random move: {}{}.", char(pos.x + 'a'), pos.y + 1);
 
     return pos;
 }
 
-static inline std::optional<Pos> ScanInLineOneDirection(const Grid& grid, Pos pos, Vec dir) {
+static inline std::optional<Pos> ScanInLineOneDirection(const Grid& grid,
+                                                        Pos pos, Vec dir) {
     Pos currentPos = {pos.x + dir.x, pos.y + dir.y};
-    
+
     while (InBounds(currentPos)) {
         // if there is a miss then its the end of a ship
-        if (grid[currentPos.x][currentPos.y] == GridSquare::Missed)
-            break;
+        if (grid[currentPos.x][currentPos.y] == GridSquare::Missed) break;
 
         // it there is an empty sqare it is possible that the next
         // part of the ship is there
@@ -59,19 +61,22 @@ static inline std::optional<Pos> ScanInLineOneDirection(const Grid& grid, Pos po
     return std::nullopt;
 }
 
-static inline std::optional<Pos> ScanInLineBothDirections(const Grid& grid, Pos pos, Vec dir) {
-    logging::debug("Scanning in line {}{} neighbours", char(pos.x + 'a'), pos.y + 1);
+static inline std::optional<Pos> ScanInLineBothDirections(const Grid& grid,
+                                                          Pos pos, Vec dir) {
+    logging::debug("Scanning in line {}{} neighbours", char(pos.x + 'a'),
+                   pos.y + 1);
     // scan forward and backwards
-    for (auto d : {dir, {-dir.x, -dir.y}})
-        if (auto res = ScanInLineOneDirection(grid, pos, d))
-            return res.value();
+    for (auto d : {
+             dir, {-dir.x, -dir.y}
+    })
+        if (auto res = ScanInLineOneDirection(grid, pos, d)) return res.value();
     return std::nullopt;
 }
 
 
 std::optional<Pos> SearchPossible(const Grid& grid, Pos pos) {
     // vectors of pos neighbours
-    static constexpr auto NeighbourVectors =  std::to_array<Vec>({
+    static constexpr auto NeighbourVectors = std::to_array<Vec>({
         {-1,  0}, // top
         { 1,  0}, // bottom
         { 0, -1}, // left
@@ -80,8 +85,7 @@ std::optional<Pos> SearchPossible(const Grid& grid, Pos pos) {
 
     // if the position is not a hit then no predictions can be made
     // no ship, no prediction
-    if (grid[pos.x][pos.y] != GridSquare::Hit)
-        return std::nullopt;
+    if (grid[pos.x][pos.y] != GridSquare::Hit) return std::nullopt;
 
     logging::debug("Checking {}{} neighbours", char(pos.x + 'a'), pos.y + 1);
 
@@ -89,9 +93,8 @@ std::optional<Pos> SearchPossible(const Grid& grid, Pos pos) {
 
     for (auto vec : NeighbourVectors) {
         Pos currentPos = {pos.x + vec.x, pos.y + vec.y};
-        if (not InBounds(currentPos)) 
-            continue;
-        
+        if (not InBounds(currentPos)) continue;
+
         auto& square = grid[currentPos.x][currentPos.y];
 
         // chceck for any possible attacks in the direction of the ship
@@ -123,8 +126,7 @@ static std::optional<Pos> SmartMove(const Grid& grid) {
         for (std::size_t j = 0; j < GRID_SIZE; j++) {
             // find the first possible move
             // TODO: evaluate the best move
-            if (auto pos = SearchPossible(grid, {i, j}))
-                return pos;
+            if (auto pos = SearchPossible(grid, {i, j})) return pos;
         }
     }
     return std::nullopt;
@@ -144,9 +146,7 @@ Pos SimpleEnemy::MakeTurnImpl(const Grid& grid) {
 }
 
 
-Pos SimpleEnemy::MakeTurn(const Grid& grid) const {
-    return MakeTurnImpl(grid);
-}
+Pos SimpleEnemy::MakeTurn(const Grid& grid) const { return MakeTurnImpl(grid); }
 
 
 
@@ -157,15 +157,15 @@ static inline nlohmann::json GridToJson(const Grid& grid) {
         nlohmann::json row = nlohmann::json::array();
         for (std::size_t j {}; j < GRID_SIZE; j++) {
             switch (grid[i][j]) {
-                case GridSquare::Hit:
-                    row.push_back("H");
-                    break;
-                case GridSquare::Missed:
-                    row.push_back("M");
-                    break;
-                default:
-                    row.push_back(".");
-                    break;
+            case GridSquare::Hit:
+                row.push_back("H");
+                break;
+            case GridSquare::Missed:
+                row.push_back("M");
+                break;
+            default:
+                row.push_back(".");
+                break;
             }
         }
         jgrid.push_back(row);
@@ -179,38 +179,39 @@ Pos AIEnemy::MakeTurnImpl(const Grid& grid) {
     try {
         httplib::Client client("http://localhost:11434");
 
-        std::string prompt = "You are playing battleship game. With the given table make the best possible move, the table contains values like \".\" (empty posible to attack), \"M\" (already attacked - missed), \"H\" (already attacked hit), these values represent points. You can only attack empty points. The given table is in json format: ";
+        std::string prompt
+            = "You are playing battleship game. With the given table make the "
+              "best possible move, the table contains values like \".\" (empty "
+              "posible to attack), \"M\" (already attacked - missed), \"H\" "
+              "(already attacked hit), these values represent points. You can "
+              "only attack empty points. The given table is in json format: ";
         prompt += GridToJson(grid).dump();
 
         nlohmann::json req = {
-            {"model", "gemma:2b"},
-            {"prompt", prompt},
-            {"stream", false},
-            {"format", {
-                {"type", "object"},
-                {"properties", {
-                    {"x", nlohmann::json::object({{"type", "number"}})},
-                    {"y", nlohmann::json::object({{"type", "number"}})}
-                }},
-                {"required", nlohmann::json::array({"x", "y"})}
-            }}
+            { "model",        "gemma:2b"                      },
+            {"prompt",                                  prompt},
+            {"stream",                                   false},
+            {"format",
+             {{"type", "object"},
+             {"properties",
+             {{"x", nlohmann::json::object({{"type", "number"}})},
+             {"y", nlohmann::json::object({{"type", "number"}})}}},
+             {"required", nlohmann::json::array({"x", "y"})}} }
         };
 
         auto res = client.Post("/api/generate", req.dump(), "application/json");
-        
-        nlohmann::json attackVec = nlohmann::json::parse(nlohmann::json::parse(res->body)["response"].get<std::string>());
-        
+
+        nlohmann::json attackVec = nlohmann::json::parse(
+            nlohmann::json::parse(res->body)["response"].get<std::string>());
+
         std::size_t x = attackVec["x"].get<std::size_t>();
         std::size_t y = attackVec["y"].get<std::size_t>();
 
         return {x, y};
-    }
-    catch (...) {
+    } catch (...) {
         // fallback
         return SimpleEnemy::MakeTurnImpl(grid);
     }
 }
 
-Pos AIEnemy::MakeTurn(const Grid& grid) const {
-    return MakeTurnImpl(grid);
-}
+Pos AIEnemy::MakeTurn(const Grid& grid) const { return MakeTurnImpl(grid); }

@@ -7,9 +7,8 @@
 #include "Player.h"
 #include "PlayerBuilder.h"
 
-#include <raylib.h>
 #include <logging/logging.h>
-
+#include <raylib.h>
 
 using namespace Battleships;
 
@@ -21,22 +20,18 @@ PlayerBuilderMenu::PlayerBuilderMenu(Application& app)
       _startBtn({770, 340, 300, 70}, "Start Game", {}),
       _startAIBtn({770, 430, 300, 70}, "Start Game (AI)", {}),
       _nextShipView({50, 200, 200, 200}) {
-        logging::info("Initializing PlayerBuilderMenu");
-        _clearBtn.SetCallback([this]() {
-            this->_bld.Clear();
-        });
-        _generateBtn.SetCallback([this]() {
-            this->_bld.GenerateRandomGrid();
-        });
-        _startBtn.SetCallback([this]() {
-            if (this->_bld.Ready())
-                this->_app.StartNewGame<SimpleEnemy>(this->_bld.Build());
-        });
-        _startAIBtn.SetCallback([this]() {
-            if (this->_bld.Ready())
-                this->_app.StartNewGame<AIEnemy>(this->_bld.Build());
-        });
-      }
+    logging::info("Initializing PlayerBuilderMenu");
+    _clearBtn.SetCallback([this]() { this->_bld.Clear(); });
+    _generateBtn.SetCallback([this]() { this->_bld.GenerateRandomGrid(); });
+    _startBtn.SetCallback([this]() {
+        if (this->_bld.Ready())
+            this->_app.StartNewGame<SimpleEnemy>(this->_bld.Build());
+    });
+    _startAIBtn.SetCallback([this]() {
+        if (this->_bld.Ready())
+            this->_app.StartNewGame<AIEnemy>(this->_bld.Build());
+    });
+}
 
 
 void PlayerBuilderMenu::OnUpdate() {
@@ -45,13 +40,14 @@ void PlayerBuilderMenu::OnUpdate() {
     _startBtn.OnUpdate();
     _startAIBtn.OnUpdate();
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(GetMousePosition(), _nextShipView)) {
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)
+        && CheckCollisionPointRec(GetMousePosition(), _nextShipView)) {
         if (_ort == PlayerBuilder::ShipOrientation::Horizontal)
             _ort = PlayerBuilder::ShipOrientation::Vertical;
         else
             _ort = PlayerBuilder::ShipOrientation::Horizontal;
     }
-    
+
     if (auto pos = _ghnd.GetClick()) {
         if (_bld.GetGrid()[pos.value().x][pos.value().y] == GridSquare::Ship)
             _bld.RemoveShip(pos.value());
@@ -65,7 +61,7 @@ void PlayerBuilderMenu::Draw() const noexcept {
     DrawRectangleLinesEx(_nextShipView, 1.7, Colors::black);
 
     if (auto size = _bld.GetNextShipToInsert()) {
-        DrawShip(size.value()); 
+        DrawShip(size.value());
     }
 
     _ghnd.Draw(_bld.GetGrid());
@@ -79,13 +75,14 @@ void PlayerBuilderMenu::Draw() const noexcept {
 void PlayerBuilderMenu::DrawShip(ShipSize size) const noexcept {
     constexpr auto SQW = GridView::GRID_SQUARE_WIDTH;
 
-    float innerSize = SQW * 0.7f;
-    float innerOffset = (SQW-innerSize)/2;
+    float innerSize   = SQW * 0.7f;
+    float innerOffset = (SQW - innerSize) / 2;
 
     if (_ort == PlayerBuilder::ShipOrientation::Horizontal) {
         float x = _nextShipView.x + (_nextShipView.width - SQW * size) / 2;
         float y = _nextShipView.y + (_nextShipView.height - SQW) / 2;
-        Rectangle inner {x + innerOffset, y + innerOffset, innerSize, innerSize};
+        Rectangle inner {x + innerOffset, y + innerOffset, innerSize,
+                         innerSize};
         for (ShipSize i {}; i < size; i++) {
             DrawRectangleRec(inner, Colors::ship);
             inner.x += SQW;
@@ -93,7 +90,8 @@ void PlayerBuilderMenu::DrawShip(ShipSize size) const noexcept {
     } else {
         float x = _nextShipView.x + (_nextShipView.width - SQW) / 2;
         float y = _nextShipView.y + (_nextShipView.height - SQW * size) / 2;
-        Rectangle inner {x + innerOffset, y + innerOffset, innerSize, innerSize};
+        Rectangle inner {x + innerOffset, y + innerOffset, innerSize,
+                         innerSize};
         for (ShipSize i {}; i < size; i++) {
             DrawRectangleRec(inner, Colors::ship);
             inner.y += SQW;

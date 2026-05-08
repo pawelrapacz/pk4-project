@@ -3,7 +3,7 @@
 namespace Battleships {
 
     class Entity {
-    public:
+      public:
         Entity() noexcept = default;
         Entity(int x, int y) noexcept;
         virtual ~Entity() = default;
@@ -13,9 +13,9 @@ namespace Battleships {
         int GetX() const noexcept;
         int GetY() const noexcept;
 
-    protected:
+      protected:
         int _x = 0;
         int _y = 0;
     };
 
-}  // namespace Battleships
+} // namespace Battleships

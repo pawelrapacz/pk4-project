@@ -6,30 +6,23 @@
 #include "Interface/Button.h"
 #include "Interface/PlayerBuilderMenu.h"
 
-#include <raylib.h>
 #include <logging/logging.h>
+#include <raylib.h>
 
 using namespace Battleships;
 
 MainMenu::MainMenu(Application& app)
     : Menu(app),
-    _quickBtn({(WINDOW_WIDTH - 300) / 2.f, 200, 300, 70}, "Quick Game"),
-    _quickAIBtn({(WINDOW_WIDTH - 300) / 2.f, 290, 300, 70}, "Quick Game (AI)"),
-    _newBtn({(WINDOW_WIDTH - 300) / 2.f, 380, 300, 70}, "New Game"),
-    _quitBtn({(WINDOW_WIDTH - 300) / 2.f, 470, 300, 70}, "Quit") {
+      _quickBtn({(WINDOW_WIDTH - 300) / 2.f, 200, 300, 70}, "Quick Game"),
+      _quickAIBtn({(WINDOW_WIDTH - 300) / 2.f, 290, 300, 70},
+                  "Quick Game (AI)"),
+      _newBtn({(WINDOW_WIDTH - 300) / 2.f, 380, 300, 70}, "New Game"),
+      _quitBtn({(WINDOW_WIDTH - 300) / 2.f, 470, 300, 70}, "Quit") {
     logging::info("Initializing MainMenu");
-    _quickBtn.SetCallback([this](){
-        this->_app.StartNewGame<SimpleEnemy>();
-    });
-    _quickAIBtn.SetCallback([this](){
-        this->_app.StartNewGame<AIEnemy>();
-    });
-    _newBtn.SetCallback([this]() {
-        this->_app.SetMenu<PlayerBuilderMenu>();
-    });
-    _quitBtn.SetCallback([this]() {
-        this->_app.state.running = false;
-    });
+    _quickBtn.SetCallback([this]() { this->_app.StartNewGame<SimpleEnemy>(); });
+    _quickAIBtn.SetCallback([this]() { this->_app.StartNewGame<AIEnemy>(); });
+    _newBtn.SetCallback([this]() { this->_app.SetMenu<PlayerBuilderMenu>(); });
+    _quitBtn.SetCallback([this]() { this->_app.state.running = false; });
 }
 
 void MainMenu::OnUpdate() {
@@ -41,8 +34,8 @@ void MainMenu::OnUpdate() {
 
 void MainMenu::Draw() const noexcept {
     constexpr auto text = "Menu";
-    int posX = (WINDOW_WIDTH - MeasureText(text, FONT_SIZE_H1)) / 2;
-    int posY = 100;
+    int posX            = (WINDOW_WIDTH - MeasureText(text, FONT_SIZE_H1)) / 2;
+    int posY            = 100;
 
     DrawText(text, posX, posY, FONT_SIZE_H1, Colors::text);
 

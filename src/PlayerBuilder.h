@@ -7,16 +7,13 @@
 namespace Battleships {
 
     class PlayerBuilder {
-    public:
-        enum class ShipOrientation {
-            Horizontal,
-            Vertical
-        };
+      public:
+        enum class ShipOrientation { Horizontal, Vertical };
 
-    public:
+      public:
         static Player BuildRandom();
 
-        PlayerBuilder() = default;
+        PlayerBuilder()  = default;
         ~PlayerBuilder() = default;
 
         void GenerateRandomGrid();
@@ -27,12 +24,12 @@ namespace Battleships {
         const Grid& GetGrid() const noexcept;
         bool Ready() const noexcept;
         Player Build() const;
-    
-    private:
-        using ShipData = Player::ShipData;
+
+      private:
+        using ShipData     = Player::ShipData;
         using ShipDataGrid = Player::ShipDataGrid;
 
-    private:
+      private:
         static ShipData CreateShip(Pos, ShipSize, ShipOrientation) noexcept;
         static Grid RemoveMargins(const Grid&) noexcept;
 
@@ -42,10 +39,10 @@ namespace Battleships {
         void InsertShip(const ShipData&);
         bool ValidateShipPlacement(const ShipData&) const noexcept;
 
-    private:
+      private:
         Rules::FleetSpec _fleet = Rules::FLEET_DEFINITION;
-        Grid _grid = {};
-        ShipDataGrid _shipData = {};
+        Grid _grid              = {};
+        ShipDataGrid _shipData  = {};
     };
 
-}
+} // namespace Battleships

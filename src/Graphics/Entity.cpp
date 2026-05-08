@@ -10,10 +10,6 @@ void Entity::SetPosition(int x, int y) noexcept {
     _y = y;
 }
 
-int Entity::GetX() const noexcept {
-    return _x;
-}
+int Entity::GetX() const noexcept { return _x; }
 
-int Entity::GetY() const noexcept {
-    return _y;
-}
+int Entity::GetY() const noexcept { return _y; }

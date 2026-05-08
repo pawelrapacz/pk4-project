@@ -1,25 +1,25 @@
 #pragma once
 
+#include "Interface/Button.h"
+#include "Interface/GridView.h"
+#include "Interface/Menu.h"
 #include "Player.h"
 #include "PlayerBuilder.h"
-#include "Interface/Menu.h"
-#include "Interface/GridView.h"
-#include "Interface/Button.h"
 
 #include <raylib.h>
 
 namespace Battleships {
     class PlayerBuilderMenu : public Menu {
-    public:
+      public:
         PlayerBuilderMenu(Application&);
 
         void OnUpdate() override;
         void Draw() const noexcept override;
 
-    private:
+      private:
         void DrawShip(ShipSize) const noexcept;
 
-    private:
+      private:
         GridView _ghnd;
         Button _clearBtn;
         Button _generateBtn;
@@ -28,7 +28,8 @@ namespace Battleships {
 
         Rectangle _nextShipView;
 
-        PlayerBuilder::ShipOrientation _ort = PlayerBuilder::ShipOrientation::Vertical;
+        PlayerBuilder::ShipOrientation _ort
+            = PlayerBuilder::ShipOrientation::Vertical;
         PlayerBuilder _bld;
     };
-}
+} // namespace Battleships

@@ -3,8 +3,8 @@
 #include "Interface/Config.h"
 #include "Player.h"
 
-#include <raylib.h>
 #include <logging/logging.h>
+#include <raylib.h>
 
 #include <array>
 #include <optional>
@@ -15,7 +15,7 @@ using namespace Battleships;
 GridView::GridView(float x, float y, const char* label, float size)
     : _size(size), _label(label) {
     logging::info("Initializing GridView");
-    _lx = x + (_size * (GRID_SIZE + 1) - MeasureText(_label, FONT_SIZE_H3))/2;
+    _lx = x + (_size * (GRID_SIZE + 1) - MeasureText(_label, FONT_SIZE_H3)) / 2;
     _ly = y;
 
     _hx = x;
@@ -28,17 +28,18 @@ GridView::GridView(float x, float y, const char* label, float size)
 
 std::optional<Pos> GridView::GetClick() const noexcept {
     // check click
-    if (not IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        return std::nullopt;
-    
+    if (not IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) return std::nullopt;
+
     // check colision
     Rectangle rec {_gx, _gy, _size, _size};
     auto mousePos = GetMousePosition();
-    
+
     for (std::size_t i = 0; i < GRID_SIZE; i++) {
-        for (std::size_t j=0; j < GRID_SIZE; j++) {
+        for (std::size_t j = 0; j < GRID_SIZE; j++) {
             if (CheckCollisionPointRec(mousePos, rec))
-                return {{i ,j}}; // click on grid
+                return {
+                    {i, j}
+                }; // click on grid
 
             rec.y += _size;
         }
@@ -58,17 +59,15 @@ void GridView::Draw(const Grid& grid) const noexcept {
 }
 
 
-float GridView::GetWidth() const noexcept {
-    return _size * (GRID_SIZE + 1);
-}
+float GridView::GetWidth() const noexcept { return _size * (GRID_SIZE + 1); }
 
-float GridView::GetHeight() const noexcept {
-    return GetWidth() + FONT_SIZE_H3;
-}
+float GridView::GetHeight() const noexcept { return GetWidth() + FONT_SIZE_H3; }
 
 void GridView::DrawGridLabels() const noexcept {
-    constexpr auto LABEL_H = std::to_array({"a", "b", "c", "d", "e", "f","g", "h", "i", "j"});
-    constexpr auto LABEL_V = std::to_array({"1", "2", "3", "4", "5", "6","7", "8", "9", "10"});
+    constexpr auto LABEL_H
+        = std::to_array({"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"});
+    constexpr auto LABEL_V
+        = std::to_array({"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
 
     // leave left top corner empty
     Rectangle recH {_hx + _size, _hy, _size, _size};
@@ -76,17 +75,19 @@ void GridView::DrawGridLabels() const noexcept {
     float textOffsetTop = (_size - FONT_SIZE) / 2;
 
     for (std::size_t i = 0; i < GRID_SIZE; i++) {
-        
-        auto textPosXH = (_size - MeasureText(LABEL_H[i], FONT_SIZE))/2;
+
+        auto textPosXH = (_size - MeasureText(LABEL_H[i], FONT_SIZE)) / 2;
         DrawRectangleRec(recH, Colors::blue);
         DrawRectangleLinesEx(recH, 1, Colors::white);
-        DrawText(LABEL_H[i], recH.x+textPosXH, recH.y+textOffsetTop, FONT_SIZE, Colors::white);
-        
+        DrawText(LABEL_H[i], recH.x + textPosXH, recH.y + textOffsetTop,
+                 FONT_SIZE, Colors::white);
+
         // Vertial Labels
-        auto textPosXV = (_size - MeasureText(LABEL_V[i], FONT_SIZE))/2;
+        auto textPosXV = (_size - MeasureText(LABEL_V[i], FONT_SIZE)) / 2;
         DrawRectangleRec(recV, Colors::blue);
         DrawRectangleLinesEx(recV, 1, Colors::white);
-        DrawText(LABEL_V[i], recV.x+textPosXV, recV.y+textOffsetTop, FONT_SIZE, Colors::white);
+        DrawText(LABEL_V[i], recV.x + textPosXV, recV.y + textOffsetTop,
+                 FONT_SIZE, Colors::white);
 
         recH.x += _size;
         recV.y += _size;
@@ -94,12 +95,13 @@ void GridView::DrawGridLabels() const noexcept {
 }
 
 void GridView::DrawGrid(const Grid& grid) const noexcept {
-    float innerSize = _size * 0.7f;
-    float innerOffset = (_size-innerSize)/2;
+    float innerSize   = _size * 0.7f;
+    float innerOffset = (_size - innerSize) / 2;
 
     Rectangle outer {_gx, _gy, _size, _size};
-    Rectangle inner {_gx + innerOffset, _gy + innerOffset, innerSize, innerSize};
-    
+    Rectangle inner {_gx + innerOffset, _gy + innerOffset, innerSize,
+                     innerSize};
+
     // draw grid
     for (std::size_t i = 0; i < GRID_SIZE; i++) {
         for (std::size_t j = 0; j < GRID_SIZE; j++) {
@@ -107,18 +109,19 @@ void GridView::DrawGrid(const Grid& grid) const noexcept {
             DrawRectangleLinesEx(outer, 1.3f, Colors::white);
 
             switch (grid[i][j]) {
-                case GridSquare::Ship:
-                    DrawRectangleRec(inner, Colors::ship);
-                    break;
-                case GridSquare::Hit:
-                    DrawRectangleRec(inner, Colors::hit);
-                    break;
-                case GridSquare::Missed:
-                    // DrawRectangleRec(inner, Colors::lightblue);
-                    DrawCircle(outer.x + outer.width / 2, outer.y + outer.height / 2, 3, Colors::missed);
-                    break;
-                default:
-                    break;
+            case GridSquare::Ship:
+                DrawRectangleRec(inner, Colors::ship);
+                break;
+            case GridSquare::Hit:
+                DrawRectangleRec(inner, Colors::hit);
+                break;
+            case GridSquare::Missed:
+                // DrawRectangleRec(inner, Colors::lightblue);
+                DrawCircle(outer.x + outer.width / 2,
+                           outer.y + outer.height / 2, 3, Colors::missed);
+                break;
+            default:
+                break;
             }
 
             outer.y += _size;

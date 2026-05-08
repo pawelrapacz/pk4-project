@@ -1,27 +1,25 @@
 #include "GameOverMenu.h"
 
-#include "Config.h"
 #include "Application.h"
-#include "MainMenu.h"
+#include "Config.h"
 #include "Interface/Button.h"
+#include "MainMenu.h"
 
-#include <raylib.h>
 #include <logging/logging.h>
+#include <raylib.h>
 
 using namespace Battleships;
 
 GameOverMenu::GameOverMenu(Application& game)
     : Menu(game),
-    _rec({0, (WINDOW_HEIGHT - 250) / 2.f, WINDOW_WIDTH, 250}),
-    _newBtn(WINDOW_WIDTH / 2.f - 20 - Button::DEFAULT_WIDTH, _rec.y + 160, "Quick Game"),
-    _mainMenuBtn(WINDOW_WIDTH / 2.f + 20, _rec.y + 160,"Main Menu")
-{
+      _rec({0, (WINDOW_HEIGHT - 250) / 2.f, WINDOW_WIDTH, 250}),
+      _newBtn(WINDOW_WIDTH / 2.f - 20 - Button::DEFAULT_WIDTH, _rec.y + 160,
+              "Quick Game"),
+      _mainMenuBtn(WINDOW_WIDTH / 2.f + 20, _rec.y + 160, "Main Menu") {
     logging::info("Initializing GameOverMenu");
 
-    _newBtn.SetCallback([this](){
-        this->_app.RestartGame();
-    });
-    _mainMenuBtn.SetCallback([this](){
+    _newBtn.SetCallback([this]() { this->_app.RestartGame(); });
+    _mainMenuBtn.SetCallback([this]() {
         this->_app.EndGame();
         this->_app.SetMenu<MainMenu>();
     });
@@ -42,7 +40,7 @@ void GameOverMenu::Draw() const noexcept {
     DrawText("GAME OVER!", posX, posY, FONT_SIZE_H1, Colors::text);
 
     const char* msg;
-    if(_app.state.playerWon)
+    if (_app.state.playerWon)
         msg = "You win!";
     else
         msg = "You lose";

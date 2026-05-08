@@ -1,15 +1,21 @@
 # Catalogues
-.vscode/**
-.cache/**
-[Bb]in/**
-[Oo]ut/**
-[Bb]uild/**
-[Dd]ebug/**
-[Dd]ocs/**
-[Aa]ssets/**
-external/**
+.vscode/
+.cache/
+[Bb]in/
+[Oo]ut/
+[Bb]uild/
+[Dd]ebug/
+[Dd]ocs/
+[Aa]ssets/
+external/
+**/svg/
+**/img/
+
+
 
 # Files
-**/.gitignore
-**/CMakeLists.txt
-**/README.md
+.gitignore
+.gitattributes
+**/*.txt
+**/*.md
+**/*.desktop
