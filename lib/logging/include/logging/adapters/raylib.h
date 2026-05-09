@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef LOGGING_RAYLIB_ADAPTER
     #error "To use this header file enable the LOGGING_RAYLIB_ADAPTER option."
 #endif

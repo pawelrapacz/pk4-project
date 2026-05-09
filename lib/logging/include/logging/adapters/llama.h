@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef LOGGING_LLAMA_ADAPTER
     #error "To use this header file enable the LOGGING_LLAMA_ADAPTER option."
 #endif
