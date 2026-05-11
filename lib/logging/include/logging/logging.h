@@ -34,126 +34,137 @@ namespace logging {
 
     inline auto& default_stream = std::clog;
 
-    struct specs_ {
-        level logLevel             = level::debug;
-        bool toFile                = false;
-        bool toStdout              = true;
-        std::ostream* stream       = &default_stream;
-        std::filesystem::path path = "logs/program.log";
-        std::mutex fileMtx;
-        std::mutex streamMtx;
-
-      private:
-        std::ofstream file;
-        friend inline std::ofstream& get_log_file_() noexcept;
-    };
-
-    inline specs_ log_specs_ {};
-
-
-    inline std::ostream& get_log_stream_() noexcept {
-        return *log_specs_.stream;
-    }
-
-    inline std::ofstream& get_log_file_() noexcept { return log_specs_.file; }
-
-    inline constexpr styles::style get_style_(level lvl) noexcept {
-        using namespace styles;
-        static constexpr auto level_styles = std::to_array<style>({
-            FG_BLUE | ITALIC, // DEBUG
-            {},               // INFO
-            FG_YELLOW,        // WARN
-            FG_RED | BOLD,    // ERROR
-            BG_RED | BOLD,    // FATAL
-            {},               // OFF
-        });
-
-        return level_styles[static_cast<std::size_t>(lvl)];
-    }
-
-    inline bool should_flush_(level lvl) noexcept { return lvl > level::warn; }
-
-    inline constexpr std::string_view get_level_name_(level lvl) noexcept {
-        static constexpr auto level_names = std::to_array<std::string_view>({
-            "DEBUG",
-            "INFO",
-            "WARNING",
-            "ERROR",
-            "FATAL",
-            {}, // OFF
-        });
-
-        return level_names[static_cast<std::size_t>(lvl)];
-    }
-
 #ifndef LOGGING_DISABLE
 
-    template<typename Tp>
-    inline std::string create_log_message_(level lvl, const Tp& msg) {
-        auto time = std::chrono::zoned_time(std::chrono::current_zone(),
-                                            std::chrono::system_clock::now());
-        return std::format("[{:%F %X}] {} {}", time, get_level_name_(lvl), msg);
-    }
+    namespace detail {
 
-    inline void write_to_console_(level lvl, const std::string& msg) {
-        std::lock_guard lock(log_specs_.streamMtx);
+        struct specs {
+            level logLevel             = level {};
+            bool toFile                = false;
+            bool toStdout              = true;
+            std::ostream* stream       = &default_stream;
+            std::filesystem::path path = "logs/program.log";
+            std::mutex fileMtx;
+            std::mutex streamMtx;
 
-    #ifndef LOGGING_NO_COLORS
-        get_log_stream_() << styles::apply_seq(get_style_(lvl)) << msg
-                          << styles::reset_seq() << '\n';
-    #else
-        get_log_stream_() << msg << "\n";
-    #endif
-        if (should_flush_(lvl)) get_log_stream_().flush();
-    }
+          private:
+            std::ofstream file;
+            friend inline std::ofstream& get_log_file() noexcept;
+        };
 
-    inline void write_to_file_(level lvl, const std::string& msg) {
-        std::lock_guard lock(log_specs_.fileMtx);
+        inline specs log_specs {};
 
-        if (!get_log_file_().is_open()) {
-            if (log_specs_.path.has_parent_path())
-                std::filesystem::create_directories(
-                    log_specs_.path.parent_path());
-
-            get_log_file_().open(log_specs_.path);
+        inline std::ostream& get_log_stream() noexcept {
+            return *log_specs.stream;
         }
 
-        get_log_file_() << msg << '\n';
+        inline std::ofstream& get_log_file() noexcept { return log_specs.file; }
 
-        if (should_flush_(lvl)) get_log_file_().flush();
+        inline constexpr styles::style get_style(level lvl) noexcept {
+            using namespace styles;
+            static constexpr auto level_styles = std::to_array<style>({
+                FG_BLUE | ITALIC, // DEBUG
+                {},               // INFO
+                FG_YELLOW,        // WARN
+                FG_RED | BOLD,    // ERROR
+                BG_RED | BOLD,    // FATAL
+                {},               // OFF
+            });
+
+            return level_styles[static_cast<std::size_t>(lvl)];
+        }
+
+        inline bool should_flush(level lvl) noexcept {
+            return lvl > level::warn;
+        }
+
+        inline constexpr std::string_view get_level_name(level lvl) noexcept {
+            static constexpr auto level_names
+                = std::to_array<std::string_view>({
+                    "DEBUG",
+                    "INFO",
+                    "WARNING",
+                    "ERROR",
+                    "FATAL",
+                    {}, // OFF
+                });
+
+            return level_names[static_cast<std::size_t>(lvl)];
+        }
+
+        template<typename Tp>
+        inline std::string create_log_message(level lvl, const Tp& msg) {
+            auto time = std::chrono::zoned_time(
+                std::chrono::current_zone(), std::chrono::system_clock::now());
+            return std::format("[{:%F %X}] {} {}", time, get_level_name(lvl),
+                               msg);
+        }
+
+        inline void write_to_console(level lvl, const std::string& msg) {
+            std::lock_guard lock(log_specs.streamMtx);
+
+    #ifndef LOGGING_NO_COLORS
+            get_log_stream() << styles::apply_seq(get_style(lvl)) << msg
+                             << styles::reset_seq() << '\n';
+    #else
+            get_log_stream() << msg << "\n";
+    #endif
+            if (should_flush(lvl)) get_log_stream().flush();
+        }
+
+        inline void write_to_file(level lvl, const std::string& msg) {
+            std::lock_guard lock(log_specs.fileMtx);
+
+            if (!get_log_file().is_open()) {
+                if (log_specs.path.has_parent_path())
+                    std::filesystem::create_directories(
+                        log_specs.path.parent_path());
+
+                get_log_file().open(log_specs.path);
+            }
+
+            get_log_file() << msg << '\n';
+
+            if (should_flush(lvl)) get_log_file().flush();
+        }
+
+    } // namespace detail
+
+
+    inline void set_level(level lvl) noexcept {
+        detail::log_specs.logLevel = lvl;
     }
 
-
-    inline void set_level(level lvl) noexcept { log_specs_.logLevel = lvl; }
-
     inline void set_file(const std::filesystem::path& path) {
-        assert(!get_log_file_().is_open()
+        assert(!detail::get_log_file().is_open()
                && "The file can not be changed after it has been opend (after "
                   "the first log)");
-        log_specs_.path = path;
+        detail::log_specs.path = path;
     }
 
     inline void set_stdout(std::ostream& stream) {
-        log_specs_.stream = &stream;
+        detail::log_specs.stream = &stream;
     }
 
-    inline void to_file(bool tof = true) noexcept { log_specs_.toFile = tof; }
+    inline void to_file(bool tof = true) noexcept {
+        detail::log_specs.toFile = tof;
+    }
 
     inline void to_stdout(bool tos = true) noexcept {
-        log_specs_.toStdout = tos;
+        detail::log_specs.toStdout = tos;
     }
 
 
     template<typename Tp>
     inline void log(level lvl, const Tp& msg) {
         // omit logs below the desired level
-        if (lvl < log_specs_.logLevel) return;
+        if (lvl < detail::log_specs.logLevel) return;
 
-        std::string logMsg = create_log_message_(lvl, msg);
+        std::string logMsg = detail::create_log_message(lvl, msg);
 
-        if (log_specs_.toStdout) write_to_console_(lvl, logMsg);
+        if (detail::log_specs.toStdout) detail::write_to_console(lvl, logMsg);
 
-        if (log_specs_.toFile) write_to_file_(lvl, logMsg);
+        if (detail::log_specs.toFile) detail::write_to_file(lvl, logMsg);
     }
 
     template<typename Tp>

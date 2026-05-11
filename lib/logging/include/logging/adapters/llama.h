@@ -11,6 +11,14 @@ namespace logging {
 
 #ifndef LOGGING_DISABLE
 
+    namespace detail {
+        inline logging::level llama_log_level = level {};
+    }
+
+    inline void set_llama_level(level lvl) noexcept {
+        detail::llama_log_level = lvl;
+    }
+
     inline void llama_callback(ggml_log_level logLevel, const char* text,
                                void*) {
         static level realLevel = level::info;
@@ -33,10 +41,15 @@ namespace logging {
             break;
         }
 
-        log(realLevel, text);
+        if (realLevel < detail::llama_log_level)
+            return;
+        else
+            log(realLevel, text);
     }
 
 #else
+
+    inline void set_llama_level(level) noexcept { }
 
     inline void llama_callback(ggml_log_level, const char*, void*) { }
 

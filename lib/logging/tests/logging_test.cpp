@@ -1,28 +1,12 @@
 #include <doctest/doctest.h>
 
-#define LOGGING_NO_COLORS
-#include <logging/logging.h>
+#include "tests.h"
 
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 
-
-#define INITIALIZE()                                                           \
-    logging::log_specs_.logLevel = logging::level::debug;                      \
-    logging::log_specs_.toFile   = false;                                      \
-    logging::log_specs_.toStdout = true;                                       \
-    logging::log_specs_.stream   = &logging::default_stream;                   \
-    logging::log_specs_.path     = "logs/program.log";                         \
-    std::ostringstream str;                                                    \
-    std::string time = std::format(                                            \
-        "[{:%F %X}]",                                                          \
-        std::chrono::zoned_time(std::chrono::current_zone(),                   \
-                                std::chrono::system_clock::now()));            \
-    logging::set_stdout(str)
-
 TEST_SUITE_BEGIN("logging");
-
 
 TEST_CASE("logging level") {
     INITIALIZE();
@@ -39,6 +23,11 @@ TEST_CASE("logging level") {
 
     SUBCASE("off") {
         logging::set_level(logging::level::off);
+        logging::debug("msg");
+        logging::fatal("fatal");
+        logging::debug("vsesvfdsv");
+        logging::info("info");
+
         CHECK(str.str().empty());
     }
 }
@@ -64,29 +53,31 @@ TEST_CASE("logging to file") {
         logging::debug("");
         logging::info("info");
 
-        logging::get_log_file_().close();
-        std::ifstream logf(logging::log_specs_.path);
+        logging::detail::get_log_file().close();
+        std::ifstream logf(logging::detail::log_specs.path);
         std::ostringstream logs;
         logs << logf.rdbuf();
 
-        CHECK(std::filesystem::exists(logging::log_specs_.path));
+        CHECK(std::filesystem::exists(logging::detail::log_specs.path));
         CHECK(logs.str()
               == time + " DEBUG msg\n" + time + " FATAL fatal\n" + time
                      + " DEBUG \n" + time + " INFO info\n");
 
-        std::filesystem::remove_all(logging::log_specs_.path.relative_path()
-                                        .begin()
-                                        ->string()); // cleanup
+        std::filesystem::remove_all(
+            logging::detail::log_specs.path.relative_path()
+                .begin()
+                ->string()); // cleanup
     }
 
     SUBCASE("custom file") {
         logging::set_file("test/my/logs/foo");
         logging::info("");
-        CHECK(std::filesystem::exists(logging::log_specs_.path));
+        CHECK(std::filesystem::exists(logging::detail::log_specs.path));
 
-        std::filesystem::remove_all(logging::log_specs_.path.relative_path()
-                                        .begin()
-                                        ->string()); // cleanup
+        std::filesystem::remove_all(
+            logging::detail::log_specs.path.relative_path()
+                .begin()
+                ->string()); // cleanup
     }
 }
 
@@ -118,7 +109,7 @@ TEST_CASE("logging basic") {
         CHECK(str.str() == time + " ERROR 2137\n");
     }
 
-    SUBCASE("FATAL") {
+    SUBCASE("fatal") {
         logging::fatal("hello");
         CHECK(str.str() == time + " FATAL hello\n");
     }
@@ -152,7 +143,7 @@ TEST_CASE("logging format") {
         CHECK(str.str() == time + " ERROR 2137\n");
     }
 
-    SUBCASE("FATAL") {
+    SUBCASE("fatal") {
         logging::fatal("{}", 73283);
         CHECK(str.str() == time + " FATAL 73283\n");
     }

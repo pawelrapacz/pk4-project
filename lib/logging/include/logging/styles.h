@@ -24,21 +24,6 @@ namespace logging {
             OVERLINE         = 1 << 6,
         };
 
-        struct text_style_entry {
-            text_style key;
-            std::string_view seq;
-        };
-
-        constexpr auto TEXT_STYLE_MAP = std::to_array<text_style_entry>({
-            {            text_style::BOLD,  ANSI_CSI "1m"},
-            {           text_style::FAINT,  ANSI_CSI "2m"},
-            {          text_style::ITALIC,  ANSI_CSI "3m"},
-            {       text_style::UNDERLINE,  ANSI_CSI "4m"},
-            {    text_style::LINE_THROUGH,  ANSI_CSI "9m"},
-            {text_style::DOUBLE_UNDERLINE, ANSI_CSI "21m"},
-            {        text_style::OVERLINE, ANSI_CSI "53m"},
-        });
-
         enum color : std::uint32_t {
             NONE_ANSI_CLR,
 
@@ -81,47 +66,66 @@ namespace logging {
             BG_BRIGHT_WHITE,
         };
 
-        constexpr auto COLORS_TABLE = std::to_array<std::string_view>({
-            "",
+        namespace detail {
 
-            // Foreground (font) color
-            ANSI_CSI "39m", // FG_RESET
-            ANSI_CSI "30m", // FG_BLACK
-            ANSI_CSI "31m", // FG_RED
-            ANSI_CSI "32m", // FG_GREEN
-            ANSI_CSI "33m", // FG_YELLOW
-            ANSI_CSI "34m", // FG_BLUE
-            ANSI_CSI "35m", // FG_MAGENTA
-            ANSI_CSI "36m", // FG_CYAN
-            ANSI_CSI "37m", // FG_WHITE
-            ANSI_CSI "90m", // FG_GRAY
-            ANSI_CSI "91m", // FG_BRIGHT_RED
-            ANSI_CSI "92m", // FG_BRIGHT_GREEN
-            ANSI_CSI "93m", // FG_BRIGHT_YELLOW
-            ANSI_CSI "94m", // FG_BRIGHT_BLUE
-            ANSI_CSI "95m", // FG_BRIGHT_MAGENTA
-            ANSI_CSI "96m", // FG_BRIGHT_CYAN
-            ANSI_CSI "97m", // FG_BRIGHT_WHITE
+            struct text_style_entry {
+                text_style key;
+                std::string_view seq;
+            };
 
-            // Background color
-            ANSI_CSI "49m",  // BG_RESET
-            ANSI_CSI "40m",  // BG_BLACK
-            ANSI_CSI "41m",  // BG_RED
-            ANSI_CSI "42m",  // BG_GREEN
-            ANSI_CSI "43m",  // BG_YELLOW
-            ANSI_CSI "44m",  // BG_BLUE
-            ANSI_CSI "45m",  // BG_MAGENTA
-            ANSI_CSI "46m",  // BG_CYAN
-            ANSI_CSI "47m",  // BG_WHITE
-            ANSI_CSI "100m", // BG_GRAY
-            ANSI_CSI "101m", // BG_BRIGHT_RED
-            ANSI_CSI "102m", // BG_BRIGHT_GREEN
-            ANSI_CSI "103m", // BG_BRIGHT_YELLOW
-            ANSI_CSI "104m", // BG_BRIGHT_BLUE
-            ANSI_CSI "105m", // BG_BRIGHT_MAGENTA
-            ANSI_CSI "106m", // BG_BRIGHT_CYAN
-            ANSI_CSI "107m", // BG_BRIGHT_WHITE
-        });
+            constexpr auto TEXT_STYLE_MAP = std::to_array<text_style_entry>({
+                {            text_style::BOLD,  ANSI_CSI "1m"},
+                {           text_style::FAINT,  ANSI_CSI "2m"},
+                {          text_style::ITALIC,  ANSI_CSI "3m"},
+                {       text_style::UNDERLINE,  ANSI_CSI "4m"},
+                {    text_style::LINE_THROUGH,  ANSI_CSI "9m"},
+                {text_style::DOUBLE_UNDERLINE, ANSI_CSI "21m"},
+                {        text_style::OVERLINE, ANSI_CSI "53m"},
+            });
+
+            constexpr auto COLORS_TABLE = std::to_array<std::string_view>({
+                "",
+
+                // Foreground (font) color
+                ANSI_CSI "39m", // FG_RESET
+                ANSI_CSI "30m", // FG_BLACK
+                ANSI_CSI "31m", // FG_RED
+                ANSI_CSI "32m", // FG_GREEN
+                ANSI_CSI "33m", // FG_YELLOW
+                ANSI_CSI "34m", // FG_BLUE
+                ANSI_CSI "35m", // FG_MAGENTA
+                ANSI_CSI "36m", // FG_CYAN
+                ANSI_CSI "37m", // FG_WHITE
+                ANSI_CSI "90m", // FG_GRAY
+                ANSI_CSI "91m", // FG_BRIGHT_RED
+                ANSI_CSI "92m", // FG_BRIGHT_GREEN
+                ANSI_CSI "93m", // FG_BRIGHT_YELLOW
+                ANSI_CSI "94m", // FG_BRIGHT_BLUE
+                ANSI_CSI "95m", // FG_BRIGHT_MAGENTA
+                ANSI_CSI "96m", // FG_BRIGHT_CYAN
+                ANSI_CSI "97m", // FG_BRIGHT_WHITE
+
+                // Background color
+                ANSI_CSI "49m",  // BG_RESET
+                ANSI_CSI "40m",  // BG_BLACK
+                ANSI_CSI "41m",  // BG_RED
+                ANSI_CSI "42m",  // BG_GREEN
+                ANSI_CSI "43m",  // BG_YELLOW
+                ANSI_CSI "44m",  // BG_BLUE
+                ANSI_CSI "45m",  // BG_MAGENTA
+                ANSI_CSI "46m",  // BG_CYAN
+                ANSI_CSI "47m",  // BG_WHITE
+                ANSI_CSI "100m", // BG_GRAY
+                ANSI_CSI "101m", // BG_BRIGHT_RED
+                ANSI_CSI "102m", // BG_BRIGHT_GREEN
+                ANSI_CSI "103m", // BG_BRIGHT_YELLOW
+                ANSI_CSI "104m", // BG_BRIGHT_BLUE
+                ANSI_CSI "105m", // BG_BRIGHT_MAGENTA
+                ANSI_CSI "106m", // BG_BRIGHT_CYAN
+                ANSI_CSI "107m", // BG_BRIGHT_WHITE
+            });
+
+        } // namespace detail
 
 
         inline constexpr std::string_view to_ansi(text_style code) noexcept {
@@ -146,7 +150,7 @@ namespace logging {
         }
 
         inline constexpr std::string_view to_ansi(color clrCode) noexcept {
-            return COLORS_TABLE[static_cast<std::size_t>(clrCode)];
+            return detail::COLORS_TABLE[static_cast<std::size_t>(clrCode)];
         }
 
 
@@ -227,7 +231,7 @@ namespace logging {
             seq += to_ansi(style.fg);
             seq += to_ansi(style.bg);
 
-            for (auto& i : TEXT_STYLE_MAP) {
+            for (auto& i : detail::TEXT_STYLE_MAP) {
                 if (std::to_underlying(i.key) & std::to_underlying(style.text))
                     seq += i.seq;
             }
@@ -240,7 +244,7 @@ namespace logging {
             outstr << to_ansi(style.fg);
             outstr << to_ansi(style.bg);
 
-            for (auto& i : TEXT_STYLE_MAP) {
+            for (auto& i : detail::TEXT_STYLE_MAP) {
                 if (std::to_underlying(i.key) & std::to_underlying(style.text))
                     outstr << i.seq;
             }
