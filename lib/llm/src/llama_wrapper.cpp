@@ -62,20 +62,14 @@ std::string llama_wrapper::generate(const std::string& prompt) {
     return generate_impl(prompt, smpl);
 }
 
-std::string llama_wrapper::generate(const std::string& prompt,
-                                    const nlohmann::ordered_json& format) {
-    // ! fix
-    throw llama_wrapper_error("unsupported");
-
+std::string llama_wrapper::generate(const std::string& prompt, const nlohmann::ordered_json& format) {
     auto vocab = llama_model_get_vocab(_model);
 
     std::string grammar = json_schema_to_grammar(format, true);
     logging::debug(grammar);
-    llama_sampler* smpl
-        = llama_sampler_chain_init(llama_sampler_chain_default_params());
+    llama_sampler* smpl = llama_sampler_chain_init(llama_sampler_chain_default_params());
+    llama_sampler_chain_add(smpl, llama_sampler_init_grammar(vocab, grammar.c_str(), "root"));
     llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
-    llama_sampler_chain_add(
-        smpl, llama_sampler_init_grammar(vocab, grammar.c_str(), "root"));
     return generate_impl(prompt, smpl);
 }
 
@@ -85,8 +79,7 @@ std::string& llama_wrapper::chat(chat_messages& msg) {
     return msg.back().content;
 }
 
-std::string& llama_wrapper::chat(chat_messages& msg,
-                                 const nlohmann::ordered_json& format) {
+std::string& llama_wrapper::chat(chat_messages& msg, const nlohmann::ordered_json& format) {
     std::string res = generate(msg.back().content, format);
     msg.push_back({"assistant", res});
     return msg.back().content;

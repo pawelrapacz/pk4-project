@@ -1,3 +1,4 @@
+#include "logging/logging.h"
 #include <doctest/doctest.h>
 #include <llm/llama_wrapper.h>
 #include <nlohmann/json.hpp>
@@ -16,22 +17,25 @@ TEST_CASE("generate") {
         CHECK(!res.empty());
     }
 
-    // SUBCASE("formatted") {
-    //     json format = {
-    //         {"type", "object"},
-    //         {"properties", {
-    //             {"text", json::object({{"type", "string"}})},
-    //         }},
-    //         {"required", {}},
-    //     };
+    SUBCASE("formatted") {
+        json format = {
+            {      "type","object"                          },
+            {"properties",
+             {
+             {"x", json::object({{"type", "number"}})},
+             {"y", json::object({{"type", "number"}})},
+             }                       },
+            {  "required", {"x", "y"}},
+        };
 
-    //     json res = json::parse(llm.generate("Pick two numbers from 1 to 10",
-    //     f));
+        json res = json::parse(
+            llm.generate("Pick two numbers from 1 to 10", format));
 
+        logging::warn(res.dump(4));
 
-    //     CHECK(res.contains("x"));
-    //     CHECK(res.contains("y"));
-    // }
+        CHECK(res.contains("x"));
+        CHECK(res.contains("y"));
+    }
 }
 
 

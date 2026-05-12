@@ -17,7 +17,7 @@ AllowShortBlocksOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: WithoutElse
 BreakBeforeBinaryOperators: All
 BreakTemplateDeclarations: Yes
-ColumnLimit: 80
+ColumnLimit: 100
 IndentExternBlock: Indent
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
