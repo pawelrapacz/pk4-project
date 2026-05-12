@@ -137,6 +137,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
 
 # download gemma4:e2b
 set(MODELS_DIR ${CMAKE_BINARY_DIR}/models)
+message("downloading ai model: gemma-4-E2B-it-Q8_0.gguf")
 file(
     DOWNLOAD
     https://huggingface.co/ggml-org/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q8_0.gguf
