@@ -1,5 +1,7 @@
 add_executable(llm-tests
     tests_main.cpp
+    remote_test.cpp
+    api_formatters_test.cpp
     llama_wrapper_test.cpp
 )
 

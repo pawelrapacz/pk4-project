@@ -1,7 +1,6 @@
 #include "llm/llama_wrapper.h"
 
-#include "llm/exception.h"
-
+#include <common.h>
 #include <json-schema-to-grammar.h>
 #include <llama.h>
 #include <logging/adapters/llama.h>
@@ -64,36 +63,33 @@ std::string llama_wrapper::generate(const std::string& prompt) {
 }
 
 std::string llama_wrapper::generate(const std::string& prompt,
-                                    const nlohmann::json& json) {
+                                    const nlohmann::ordered_json& format) {
+    // ! fix
+    throw llama_wrapper_error("unsupported");
+
     auto vocab = llama_model_get_vocab(_model);
 
-    llama_sampler* smpl = llama_sampler_init_grammar(
-        vocab, json_schema_to_grammar(json, true).c_str(), "root");
+    std::string grammar = json_schema_to_grammar(format, true);
+    logging::debug(grammar);
+    llama_sampler* smpl
+        = llama_sampler_chain_init(llama_sampler_chain_default_params());
+    llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
+    llama_sampler_chain_add(
+        smpl, llama_sampler_init_grammar(vocab, grammar.c_str(), "root"));
     return generate_impl(prompt, smpl);
 }
 
-std::string llama_wrapper::chat(const std::string& prompt) {
-    return generate(prompt);
+std::string& llama_wrapper::chat(chat_messages& msg) {
+    std::string res = generate(msg.back().content);
+    msg.push_back({"assistant", res});
+    return msg.back().content;
 }
 
-
-std::vector<llama_token>
-llama_wrapper::tokenize(const std::string& prompt,
-                        const llama_vocab* vocab) const {
-    bool is_first
-        = llama_memory_seq_pos_max(llama_get_memory(_context), 0) == -1;
-
-    const int32_t n_tokens = -llama_tokenize(
-        vocab, prompt.c_str(), prompt.length(), nullptr, 0, is_first, true);
-
-    std::vector<llama_token> tokens(n_tokens);
-
-    if (llama_tokenize(vocab, prompt.c_str(), prompt.length(), tokens.data(),
-                       tokens.size(), is_first, true)
-        < 0)
-        throw llama_wrapper_error("tokenization failed");
-
-    return tokens;
+std::string& llama_wrapper::chat(chat_messages& msg,
+                                 const nlohmann::ordered_json& format) {
+    std::string res = generate(msg.back().content, format);
+    msg.push_back({"assistant", res});
+    return msg.back().content;
 }
 
 std::string llama_wrapper::generate_impl(const std::string& prompt,
@@ -101,7 +97,9 @@ std::string llama_wrapper::generate_impl(const std::string& prompt,
     std::string response;
 
     const llama_vocab* vocab = llama_model_get_vocab(_model);
-    auto tokens              = tokenize(prompt, vocab);
+    bool is_first
+        = llama_memory_seq_pos_max(llama_get_memory(_context), 0) == -1;
+    auto tokens = common_tokenize(_context, prompt, is_first, true);
 
     llama_batch batch = llama_batch_get_one(tokens.data(), tokens.size());
     llama_token new_token_id;

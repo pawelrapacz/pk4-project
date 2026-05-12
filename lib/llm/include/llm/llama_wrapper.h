@@ -1,16 +1,19 @@
 #pragma once
 
-#include <llama.h>
+#include <llm/common.h>
+#include <llm/detail/exception.h>
+#include <llm/detail/llm_interface.h>
+#include <llm/detail/vendor_fwd.h>
+
 #include <nlohmann/json_fwd.hpp>
 
 #include <atomic>
 #include <filesystem>
 #include <string>
-#include <vector>
 
 namespace llm {
 
-    class llama_wrapper {
+    class llama_wrapper : public detail::llm_interface {
       public:
         struct params {
             uint32_t n_ctx       = 512;
@@ -23,18 +26,18 @@ namespace llm {
 
         ~llama_wrapper();
 
-        std::string chat(const std::string&);
-        std::string generate(const std::string&);
-        std::string generate(const std::string&, const nlohmann::json&);
+        std::string& chat(chat_messages&) override;
+        std::string& chat(chat_messages&,
+                          const nlohmann::ordered_json&) override;
+        std::string generate(const std::string&) override;
+        std::string generate(const std::string&,
+                             const nlohmann::ordered_json&) override;
 
       private:
         static void backend_init();
         static void backend_free();
 
         std::string generate_impl(const std::string&, llama_sampler*);
-        std::vector<llama_token> tokenize(const std::string&,
-                                          const llama_vocab*) const;
-
 
       private:
         static inline std::atomic_uint32_t _s_backend_refcount = 0;
@@ -43,5 +46,24 @@ namespace llm {
         llama_model* _model     = nullptr;
         llama_context* _context = nullptr;
     };
+
+
+    class llama_wrapper_error : public detail::exception {
+      public:
+        explicit llama_wrapper_error(const char* msg)
+            : exception(msg) { }
+
+        explicit llama_wrapper_error(const std::string& msg)
+            : exception(msg) { }
+
+        llama_wrapper_error(llama_wrapper_error&&) noexcept = default;
+        llama_wrapper_error& operator=(llama_wrapper_error&&) noexcept
+            = default;
+        llama_wrapper_error(const llama_wrapper_error&)            = default;
+        llama_wrapper_error& operator=(const llama_wrapper_error&) = default;
+
+        virtual ~llama_wrapper_error() = default;
+    };
+
 
 } // namespace llm
