@@ -8,10 +8,12 @@ add_library(llm STATIC
     include/llm/common.h
     include/llm/remote.h
     include/llm/llama_wrapper.h
+    include/llm/chat.h
 
     src/llama_wrapper.cpp
     src/api_formatters.cpp
     src/remote_client.cpp
+    src/chat.cpp
 )
 
 target_compile_features(llm PUBLIC cxx_std_23)

@@ -1,4 +1,3 @@
-#include "logging/logging.h"
 #include <doctest/doctest.h>
 #include <llm/llama_wrapper.h>
 #include <nlohmann/json.hpp>
@@ -30,8 +29,6 @@ TEST_CASE("generate") {
 
         json res = json::parse(
             llm.generate("Pick two numbers from 1 to 10", format));
-
-        logging::warn(res.dump(4));
 
         CHECK(res.contains("x"));
         CHECK(res.contains("y"));

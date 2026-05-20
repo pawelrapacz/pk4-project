@@ -24,6 +24,12 @@ namespace llm {
         llama_wrapper(const std::filesystem::path&);
         llama_wrapper(const std::filesystem::path&, params);
 
+        llama_wrapper(llama_wrapper&&) noexcept;
+        llama_wrapper& operator=(llama_wrapper&&) noexcept;
+
+        llama_wrapper(const llama_wrapper&)            = delete;
+        llama_wrapper& operator=(const llama_wrapper&) = delete;
+
         ~llama_wrapper();
 
         std::string& chat(chat_messages&) override;
@@ -37,7 +43,11 @@ namespace llm {
         static void backend_init();
         static void backend_free();
 
+        llama_sampler* sampler() const;
+        llama_sampler* json_grammar_sampler(const nlohmann::ordered_json&) const;
+
         std::string generate_impl(const std::string&, llama_sampler*);
+        std::string& chat_impl(chat_messages&, llama_sampler*);
 
       private:
         static inline std::atomic_uint32_t _s_backend_refcount = 0;

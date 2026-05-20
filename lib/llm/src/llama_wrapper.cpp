@@ -1,4 +1,5 @@
 #include "llm/llama_wrapper.h"
+#include "llm/common.h"
 
 #include <common.h>
 #include <json-schema-to-grammar.h>
@@ -10,6 +11,7 @@
 #include <filesystem>
 #include <mutex>
 #include <string>
+#include <sys/types.h>
 #include <vector>
 
 using namespace llm;
@@ -25,6 +27,7 @@ void llama_wrapper::backend_init() {
 void llama_wrapper::backend_free() {
     if (_s_backend_refcount.fetch_sub(1) == 1) llama_backend_free();
 }
+
 
 llama_wrapper::llama_wrapper(const std::filesystem::path& path)
     : llama_wrapper(path, params {}) { }
@@ -45,6 +48,23 @@ llama_wrapper::llama_wrapper(const std::filesystem::path& path, params params) {
     _context = llama_init_from_model(_model, ctx_params);
 }
 
+
+llama_wrapper::llama_wrapper(llama_wrapper&& other) noexcept
+    : _model(other._model), _context(other._context) {
+    other._model   = nullptr;
+    other._context = nullptr;
+}
+
+
+llama_wrapper& llama_wrapper::operator=(llama_wrapper&& other) noexcept {
+    _model         = other._model;
+    _context       = other._context;
+    other._model   = nullptr;
+    other._context = nullptr;
+    return *this;
+}
+
+
 llama_wrapper::~llama_wrapper() {
     if (_context) llama_free(_context);
 
@@ -53,36 +73,38 @@ llama_wrapper::~llama_wrapper() {
     backend_free();
 }
 
-std::string llama_wrapper::generate(const std::string& prompt) {
-    llama_sampler* smpl
-        = llama_sampler_chain_init(llama_sampler_chain_default_params());
+
+llama_sampler* llama_wrapper::sampler() const {
+    llama_sampler* smpl = llama_sampler_chain_init(llama_sampler_chain_default_params());
     llama_sampler_chain_add(smpl, llama_sampler_init_min_p(0.05f, 1));
     llama_sampler_chain_add(smpl, llama_sampler_init_temp(0.8f));
     llama_sampler_chain_add(smpl, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
-    return generate_impl(prompt, smpl);
+    return smpl;
 }
 
-std::string llama_wrapper::generate(const std::string& prompt, const nlohmann::ordered_json& format) {
+llama_sampler* llama_wrapper::json_grammar_sampler(const nlohmann::ordered_json& format) const {
     auto vocab = llama_model_get_vocab(_model);
+    auto grammar = json_schema_to_grammar(format);
 
-    std::string grammar = json_schema_to_grammar(format, true);
-    logging::debug(grammar);
     llama_sampler* smpl = llama_sampler_chain_init(llama_sampler_chain_default_params());
     llama_sampler_chain_add(smpl, llama_sampler_init_grammar(vocab, grammar.c_str(), "root"));
     llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
-    return generate_impl(prompt, smpl);
+    return smpl;
 }
 
-std::string& llama_wrapper::chat(chat_messages& msg) {
-    std::string res = generate(msg.back().content);
-    msg.push_back({"assistant", res});
-    return msg.back().content;
+std::string llama_wrapper::generate(const std::string& prompt) {
+    return generate_impl(prompt, sampler());
 }
+
+std::string llama_wrapper::generate(const std::string& prompt,
+                                    const nlohmann::ordered_json& format) {
+    return generate_impl(prompt, json_grammar_sampler(format));
+}
+
+std::string& llama_wrapper::chat(chat_messages& msg) { return chat_impl(msg, sampler()); }
 
 std::string& llama_wrapper::chat(chat_messages& msg, const nlohmann::ordered_json& format) {
-    std::string res = generate(msg.back().content, format);
-    msg.push_back({"assistant", res});
-    return msg.back().content;
+    return chat_impl(msg, json_grammar_sampler(format));
 }
 
 std::string llama_wrapper::generate_impl(const std::string& prompt,
@@ -126,4 +148,36 @@ std::string llama_wrapper::generate_impl(const std::string& prompt,
 
     llama_sampler_free(smpl);
     return response;
+}
+
+
+std::string& llama_wrapper::chat_impl(chat_messages& msg, llama_sampler* smpl) {
+    // const char* tmpl = llama_model_chat_template(_model, nullptr);
+    // if (!tmpl)
+    //     throw llama_wrapper_error("failed to load chat template");
+
+    // std::vector<llama_chat_message> llama_msg;
+    // std::size_t all_msg_length = 0;
+    // for (auto& m : msg) {
+    //     llama_msg.push_back({m.role.c_str(), m.content.c_str()});
+    //     all_msg_length += m.content.length();
+    // }
+
+    // // add the user input to the message list and format it
+    // std::vector<char> formatted(all_msg_length * 2);
+
+    // int32_t new_len = llama_chat_apply_template(tmpl, llama_msg.data(), llama_msg.size(), true,
+    // formatted.data(), formatted.size()); if (new_len > (int32_t)formatted.size()) {
+    //     formatted.resize(new_len);
+    //     new_len = llama_chat_apply_template(tmpl, llama_msg.data(), llama_msg.size(), true,
+    //     formatted.data(), formatted.size());
+    // }
+
+    // if (new_len < 0)
+    //     throw llama_wrapper_error("failed to apply chat template");
+
+    std::string res = generate_impl(msg.back().content, smpl);
+
+    msg.emplace_back("asisstant", res);
+    return msg.back().content;
 }
