@@ -1,5 +1,6 @@
 #include "PlayerBuilder.h"
 
+#include "GridHelpers.h"
 #include "Player.h"
 
 #include <logging/logging.h>
@@ -22,6 +23,83 @@ Player PlayerBuilder::BuildRandom() {
     logging::info("Building random player");
     bld.GenerateRandomGrid();
     return bld.Build();
+}
+
+struct FindShipResult {
+    Pos pos;
+    ShipSize size;
+    PlayerBuilder::ShipOrientation ort;
+};
+
+static FindShipResult FindShip(const Grid& grid, Pos pos) {
+    using PlayerBuilder::ShipOrientation::Horizontal;
+    using PlayerBuilder::ShipOrientation::Vertical;
+
+    FindShipResult res {
+        .pos  = pos,
+        .size = 0,
+        .ort  = Horizontal // does not matter
+    };
+
+    int direction = 1;
+
+    Pos currp;                                  // current position
+    for (auto vec : NeighbourVectors) {
+        currp = {pos.x + vec.x, pos.y + vec.y}; // current position
+        if (InBounds(currp)
+            && (grid[currp.x][currp.y] == GridSquare::Hit
+                || grid[currp.x][currp.y] == GridSquare::Ship)) {
+            logging::debug("Found GridSquare pos:{}{}", char(currp.x + 'a'), currp.y);
+            if (pos.x == currp.x) {
+                res.ort   = Vertical;
+                direction = vec.y;
+            } else {
+                res.ort   = Horizontal;
+                direction = vec.x;
+            }
+            break;
+        }
+    }
+
+    currp = pos;
+    while (InBounds(currp)
+           && (grid[currp.x][currp.y] == GridSquare::Hit
+               || grid[currp.x][currp.y] == GridSquare::Ship)) {
+        if (res.ort == Horizontal)
+            currp.x += direction;
+        else // Vertical
+            currp.y += direction;
+        res.size++;
+    }
+
+    logging::debug("FindShipResult: pos:{}{}, size:{}, ort:{}", char(res.pos.x + 'a'), res.pos.y,
+                   res.size, res.ort == Horizontal ? "H" : "V");
+    return res;
+}
+
+std::optional<Player> PlayerBuilder::BuildFromGrid(const Grid& grid) {
+    logging::info("Building Player from Grid.");
+    PlayerBuilder bld;
+
+    for (std::size_t i {}; i < GRID_SIZE; i++) {
+        for (std::size_t j {}; j < GRID_SIZE; j++) {
+            if (bld._shipData[i][j] == nullptr
+                && (grid[i][j] == GridSquare::Hit || grid[i][j] == GridSquare::Ship)) {
+                auto ship = FindShip(grid, {i, j});
+                if (not bld.TryInsertShip(ship.pos, ship.size, ship.ort)) {
+                    logging::warn("Ship insertion not possible, failed to Build Player from Grid.");
+                    return std::nullopt;
+                }
+            }
+        }
+    }
+
+    if (bld.Ready()) {
+        return {bld.Build()};
+    } else {
+        logging::warn("Lacking ships, failed to Build Player from Grid.");
+        return std::nullopt;
+    }
 }
 
 void PlayerBuilder::GenerateRandomGrid() {
@@ -55,25 +133,14 @@ std::optional<ShipSize> PlayerBuilder::GetNextShipToInsert() const noexcept {
 }
 
 bool PlayerBuilder::TryInsertShip(Pos start, ShipOrientation ort) {
-    logging::info("Trying to insert ship at pos: {}{}", char(start.x + 'a'),
-                  start.y + 1);
+    logging::info("Trying to insert ship at pos: {}{}", char(start.x + 'a'), start.y + 1);
     auto size = GetNextShipToInsert();
     if (not size.has_value()) {
         logging::info("No ship to insert!");
         return false;
     }
 
-    auto ship = CreateShip(start, size.value(), ort);
-
-    if (ValidateShipPlacement(ship)) {
-        InsertShip(ship);
-        InsertShipMargin(ship);
-        logging::info("Successfully inserted a ship.");
-        return true;
-    } else {
-        logging::info("Insert unsuccessful.");
-        return false;
-    }
+    return TryInsertShip(start, size.value(), ort);
 }
 
 void PlayerBuilder::RemoveShip(Pos pos) {
@@ -129,9 +196,8 @@ static PlayerBuilder::ShipOrientation RandomOrientation() {
     return static_cast<Ort>(direction(mt));
 }
 
-PlayerBuilder::ShipData
-PlayerBuilder::CreateShip(Pos start, ShipSize size,
-                          ShipOrientation ort) noexcept {
+PlayerBuilder::ShipData PlayerBuilder::CreateShip(Pos start, ShipSize size,
+                                                  ShipOrientation ort) noexcept {
     Pos end;
     if (ort == ShipOrientation::Horizontal)
         end = {start.x + size, start.y + 1};
@@ -149,6 +215,20 @@ Grid PlayerBuilder::RemoveMargins(const Grid& grid) noexcept {
             if (out[i][j] != GridSquare::Ship) out[i][j] = GridSquare::None;
 
     return out;
+}
+
+bool PlayerBuilder::TryInsertShip(Pos start, ShipSize size, ShipOrientation ort) {
+    auto ship = CreateShip(start, size, ort);
+
+    if (ValidateShipPlacement(ship)) {
+        InsertShip(ship);
+        InsertShipMargin(ship);
+        logging::info("Successfully inserted a ship.");
+        return true;
+    } else {
+        logging::info("Insert unsuccessful.");
+        return false;
+    }
 }
 
 void PlayerBuilder::RandomInsertShip(const ShipSize size) {
@@ -175,16 +255,14 @@ void PlayerBuilder::RandomInsertShip(const ShipSize size) {
 
         // Fail-safe: prevent infinite loop if random placement keeps failing.
         if (++hits > 100u) { // unlikely
-            logging::error("Random insering a ship of size {} failed {} hits.",
-                           size, hits);
+            logging::error("Random insering a ship of size {} failed {} hits.", size, hits);
             throw std::runtime_error("Inserting ship failed.");
         }
     }
 
     InsertShip(ship);       // insert ship and its data
     InsertShipMargin(ship); // sets margins
-    logging::info("Successfully randomly inserted a ship of size {} ({} hits)",
-                  size, hits);
+    logging::info("Successfully randomly inserted a ship of size {} ({} hits)", size, hits);
 }
 
 void PlayerBuilder::InsertShipMargin(const ShipData& ship) noexcept {
@@ -196,8 +274,7 @@ void PlayerBuilder::InsertShip(const ShipData& ship) {
         if (i.size == ship.size) {
             if (i.count == 0) {
                 logging::error("Ship insertion would violate the rules");
-                throw std::runtime_error(
-                    "Ship insertion would violate the rules");
+                throw std::runtime_error("Ship insertion would violate the rules");
             }
             i.count--;
             break;

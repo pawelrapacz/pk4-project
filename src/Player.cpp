@@ -1,5 +1,6 @@
 #include "Player.h"
 
+#include "GridHelpers.h"
 #include "PlayerBuilder.h"
 
 #include <logging/logging.h>
@@ -14,8 +15,7 @@ Grid Player::RemoveShips(const Grid& grid) noexcept {
     Grid newGrid = grid;
     for (std::size_t i = 0; i < GRID_SIZE; i++)
         for (std::size_t j = 0; j < GRID_SIZE; j++)
-            if (newGrid[i][j] == GridSquare::Ship)
-                newGrid[i][j] = GridSquare::None;
+            if (newGrid[i][j] == GridSquare::Ship) newGrid[i][j] = GridSquare::None;
     return newGrid;
 }
 
@@ -26,8 +26,7 @@ Player::Player(Grid grid, ShipDataGrid shipData)
     : _grid(std::move(grid)), _shipData(std::move(shipData)) { }
 
 Player::AttackResult Player::Attack(std::size_t x, std::size_t y) noexcept {
-    assert(x < GRID_SIZE && y < GRID_SIZE
-           && "x and y must be in bounds of grid");
+    assert(x < GRID_SIZE && y < GRID_SIZE && "x and y must be in bounds of grid");
 
     AttackResult res {};
     switch (_grid[x][y]) {
@@ -51,17 +50,14 @@ Player::AttackResult Player::Attack(std::size_t x, std::size_t y) noexcept {
         }
         break;
     default: // invalid position
-        logging::info(
-            "Attack {}{}, is invalid, that position has been already hit!",
-            char(y + 'a'), x);
+        logging::info("Attack {}{}, is invalid, that position has been already hit!", char(y + 'a'),
+                      x);
         res = AttackResult::InvalidPos;
     }
     return res;
 }
 
-Player::AttackResult Player::Attack(Pos pos) noexcept {
-    return Attack(pos.x, pos.y);
-}
+Player::AttackResult Player::Attack(Pos pos) noexcept { return Attack(pos.x, pos.y); }
 
 Rules::Hits Player::GetHits() const noexcept { return _hits; }
 
@@ -84,8 +80,8 @@ const Player::ShipData& Player::GetShip(std::size_t x, std::size_t y) const {
 }
 
 void Player::InsertShipMargin(Grid& grid, const ShipData& ship) noexcept {
-    std::size_t startX = nmlz(ship.start.x - 1);
-    std::size_t startY = nmlz(ship.start.y - 1);
+    std::size_t startX = Normalize(ship.start.x - 1);
+    std::size_t startY = Normalize(ship.start.y - 1);
     // make sure end does not overflow
     std::size_t endX = std::min(ship.end.x + 1, GRID_SIZE);
     std::size_t endY = std::min(ship.end.y + 1, GRID_SIZE);

@@ -12,6 +12,7 @@ namespace Battleships {
 
       public:
         static Player BuildRandom();
+        static std::optional<Player> BuildFromGrid(const Grid&);
 
         PlayerBuilder()  = default;
         ~PlayerBuilder() = default;
@@ -33,6 +34,7 @@ namespace Battleships {
         static ShipData CreateShip(Pos, ShipSize, ShipOrientation) noexcept;
         static Grid RemoveMargins(const Grid&) noexcept;
 
+        bool TryInsertShip(Pos, ShipSize, ShipOrientation);
         void InsertShipMargin(const ShipData&) noexcept;
 
         void RandomInsertShip(const ShipSize);

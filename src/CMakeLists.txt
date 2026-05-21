@@ -20,10 +20,13 @@ PRIVATE
     Interface/PlayerBuilderMenu.cpp
     Player.h
     Player.cpp
+    GridHelpers.h
     PlayerBuilder.h
     PlayerBuilder.cpp
     Enemy.h
     Enemy.cpp
+    Serialization.h
+    Serialization.cpp
     Game.h
     Game.cpp
     Application.h
