@@ -22,12 +22,15 @@ void Application::Run() {
 #ifndef DEBUG // remove in Release
     SetTraceLogLevel(LOG_NONE);
 #endif
-    // logging removers below functions in Release
+    // logging removes below functions in Release
     // with the LOGGING_DISABLE macro (see CMakeLists.txt)
     logging::set_file("Battleships.log");
     logging::to_file();
     // use own logging system
     SetTraceLogCallback(logging::raylib_callback);
+
+    // set cwd to binary dir
+    ChangeDirectory(GetApplicationDirectory());
 
     logging::info("Initializing App");
 
