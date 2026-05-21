@@ -1,8 +1,8 @@
 #include "Serialization.h"
 
 #include "Enemy.h"
-#include "Player.h"
 #include "Game.h"
+#include "Player.h"
 #include "PlayerBuilder.h"
 #include "nlohmann/json_fwd.hpp"
 
@@ -14,6 +14,7 @@
 #include <fstream>
 #include <memory>
 #include <optional>
+#include <regex>
 #include <string_view>
 
 namespace fs = std::filesystem;
@@ -102,6 +103,12 @@ std::optional<Grid> Battleships::JsonToGrid(const ordered_json& json) {
     return grid;
 }
 
+static inline bool ValidateFileName(const fs::path& path) {
+    static const std::regex pattern {R"(^[A-Za-z0-9][A-Za-z0-9._-]*\.json$)"};
+
+    const std::string name = path.filename().string();
+    return std::regex_match(name, pattern);
+}
 
 static inline std::optional<Player> MakePlayer(const ordered_json& json) {
     if (auto optGrid = JsonToGrid(json))
@@ -110,7 +117,8 @@ static inline std::optional<Player> MakePlayer(const ordered_json& json) {
         return std::nullopt;
 }
 
-static inline std::unique_ptr<Enemy> MakeEnemy(const std::string& enemyType, const ordered_json& json) {
+static inline std::unique_ptr<Enemy> MakeEnemy(const std::string& enemyType,
+                                               const ordered_json& json) {
     std::unique_ptr<Enemy> enemy;
 
     if (auto plrOpt = MakePlayer(json)) {
@@ -120,7 +128,7 @@ static inline std::unique_ptr<Enemy> MakeEnemy(const std::string& enemyType, con
             enemy = std::make_unique<AIEnemy>(std::move(plrOpt.value()));
         else
             logging::warn("Json field \"enemyType\" has an invalid value.");
-    }  
+    }
     return enemy;
 }
 
@@ -132,6 +140,11 @@ std::optional<DeserializeGameResult> Battleships::DeserializeGame(const fs::path
     };
 
     logging::info("Deserializing Game from file {}", path.string());
+
+    if (not ValidateFileName(path)) {
+        logging::warn("Filename/extension is not supported.");
+        return fail();
+    }
 
     if (not fs::is_regular_file(path)) {
         logging::warn("File is not a regular file or does not exist");
@@ -177,7 +190,7 @@ std::optional<DeserializeGameResult> Battleships::DeserializeGame(const fs::path
         logging::warn("Failed to MakeEnemy");
         return fail();
     }
-    
+
     std::uint32_t turn;
 
     if (json["turn"].is_number_unsigned()) {
@@ -187,11 +200,18 @@ std::optional<DeserializeGameResult> Battleships::DeserializeGame(const fs::path
         return fail();
     }
 
-    return {{turn, std::move(player.value()), std::move(enemy)}};
+    return {
+        {turn, std::move(player.value()), std::move(enemy)}
+    };
 }
 
 bool Battleships::SerializeGame(const fs::path& path, const Game& game) {
     logging::info("Serializing Game to file {}", path.string());
+
+    if (not ValidateFileName(path)) {
+        logging::warn("Filename/extension is not supported.");
+        return false;
+    }
 
     std::ofstream file(path);
 
@@ -212,9 +232,9 @@ bool Battleships::SerializeGame(const fs::path& path, const Game& game) {
 
     ordered_json json = {
         {   "player", GridToJson(game.GetPlayer().GetGrid())},
-        {    "enemy", GridToJson(game.GetEnemy().GetGrid())},
-        {"enemyType", enemyType},
-        {     "turn", game.GetTurn()}
+        {    "enemy",  GridToJson(game.GetEnemy().GetGrid())},
+        {"enemyType",                              enemyType},
+        {     "turn",                         game.GetTurn()}
     };
 
     logging::debug(json.dump());

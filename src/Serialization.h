@@ -5,9 +5,9 @@
 #include <nlohmann/json_fwd.hpp>
 
 #include <cstdint>
-#include <optional>
 #include <filesystem>
 #include <memory>
+#include <optional>
 
 namespace Battleships {
 
