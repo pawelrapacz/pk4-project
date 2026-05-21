@@ -27,10 +27,9 @@ namespace Battleships {
         void EndGame() noexcept;
 
         template<typename Tp>
-            requires std::derived_from<Tp, Enemy>
-                     && std::default_initializable<Tp>
+            requires std::derived_from<Tp, Enemy> && std::default_initializable<Tp>
         void StartNewGame(Player plr = {}) {
-            _game = std::make_unique<Game>(*this, std::make_unique<Tp>(), plr);
+            _game          = std::make_unique<Game>(*this, std::make_unique<Tp>(), std::move(plr));
             state.showMenu = false;
         }
 

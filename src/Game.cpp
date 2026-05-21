@@ -16,11 +16,11 @@
 
 using namespace Battleships;
 
-Game::Game(Application& app, std::unique_ptr<Enemy> enm, Player plr)
+Game::Game(Application& app, std::unique_ptr<Enemy>&& enm, Player&& plr)
     : _app(app),
       _pghnd(50, 50, "Your fleet"),
       _eghnd(600, 50, "Enemy fleet"),
-      _plr(plr),
+      _plr(std::move(plr)),
       _enm(std::move(enm)) {
     logging::info("Initializing Game");
 }
@@ -47,7 +47,7 @@ void Game::OnUpdate() {
         lastTurn = GetTurn();
     }
 
-    if (GetTurn() == 0) { // player turn
+    if (GetTurn() % 2 == 0) { // player turn
         // get the attack position
         auto pos = _eghnd.GetClick();
 
@@ -65,7 +65,9 @@ void Game::Draw() const {
 
 std::unique_ptr<Enemy> Game::ReleaseEnemy() { return std::move(_enm); }
 
-std::uint32_t Game::GetTurn() const noexcept { return _turn % 2; }
+std::uint32_t Game::GetTurn() const noexcept { return _turn; }
+const Player& Game::GetPlayer() const noexcept { return _plr; }
+const Enemy& Game::GetEnemy() const noexcept { return *_enm; }
 
 void Game::ResolvePlayerTurn(Pos pos) {
     if (_enm->Attack(pos) == Player::AttackResult::Missed) _turn++;
@@ -94,13 +96,12 @@ void Game::EnemyTurn() {
 
     if (not _enmAttackFuture.valid()) {
         // create new attack future
-        _enmAttackFuture = std::async(
-            std::launch::async,
-            [this, snapshot = Player::RemoveShips(_plr.GetGrid())]() {
-                // MakeTurn is thread safe (stateless)
-                // it uses just the grid snapshot
-                return this->_enm->MakeTurn(snapshot);
-            });
+        _enmAttackFuture = std::async(std::launch::async,
+                                      [this, snapshot = Player::RemoveShips(_plr.GetGrid())]() {
+                                          // MakeTurn is thread safe (stateless)
+                                          // it uses just the grid snapshot
+                                          return this->_enm->MakeTurn(snapshot);
+                                      });
     } else if (_enmAttackFuture.wait_for(1ms) == std::future_status::ready) {
         // if ready, attack
         ResolveEnemyTurn(_enmAttackFuture.get());

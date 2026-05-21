@@ -16,13 +16,15 @@ namespace Battleships {
 
     class Game {
       public:
-        Game(Application&, std::unique_ptr<Enemy>, Player = {});
+        Game(Application&, std::unique_ptr<Enemy>&&, Player&& = {});
         ~Game();
 
         void OnUpdate();
         void Draw() const;
         std::unique_ptr<Enemy> ReleaseEnemy();
         std::uint32_t GetTurn() const noexcept;
+        const Player& GetPlayer() const noexcept;
+        const Enemy& GetEnemy() const noexcept;
 
       private:
         void EnemyTurn(); // async

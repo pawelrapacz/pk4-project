@@ -1,5 +1,8 @@
 #include "Enemy.h"
 
+#include "GridHelpers.h"
+#include "Player.h"
+
 #include <httplib.h>
 #include <logging/logging.h>
 #include <nlohmann/json.hpp>
@@ -14,20 +17,17 @@
 
 using namespace Battleships;
 
-struct Vec {
-    int x, y;
-};
-
-
 thread_local extern std::mt19937 mt; // defined in PlayerBuilder.cpp
-thread_local static std::uniform_int_distribution<std::size_t> dist(0, GRID_SIZE
-                                                                           - 1);
+thread_local static std::uniform_int_distribution<std::size_t> dist(0, GRID_SIZE - 1);
 
+Enemy::Enemy(Player&& p)
+    : Player(std::move(p)) { }
 
-static bool InBounds(Pos pos) noexcept {
-    // pos.x >= 0 and pos.y >= 0 always true (std::size_t)
-    return pos.x < GRID_SIZE && pos.y < GRID_SIZE;
-}
+SimpleEnemy::SimpleEnemy(Player&& p)
+    : Enemy(std::move(p)) { }
+
+AIEnemy::AIEnemy(Player&& p)
+    : Enemy(std::move(p)) { }
 
 static inline Pos RandomMove(const Grid& grid) noexcept {
     logging::debug("Making random move");
@@ -43,8 +43,7 @@ static inline Pos RandomMove(const Grid& grid) noexcept {
     return pos;
 }
 
-static inline std::optional<Pos> ScanInLineOneDirection(const Grid& grid,
-                                                        Pos pos, Vec dir) {
+static inline std::optional<Pos> ScanInLineOneDirection(const Grid& grid, Pos pos, Vec dir) {
     Pos currentPos = {pos.x + dir.x, pos.y + dir.y};
 
     while (InBounds(currentPos)) {
@@ -53,8 +52,7 @@ static inline std::optional<Pos> ScanInLineOneDirection(const Grid& grid,
 
         // it there is an empty sqare it is possible that the next
         // part of the ship is there
-        if (grid[currentPos.x][currentPos.y] == GridSquare::None)
-            return {currentPos};
+        if (grid[currentPos.x][currentPos.y] == GridSquare::None) return {currentPos};
 
         currentPos.x += dir.x;
         currentPos.y += dir.y;
@@ -62,10 +60,8 @@ static inline std::optional<Pos> ScanInLineOneDirection(const Grid& grid,
     return std::nullopt;
 }
 
-static inline std::optional<Pos> ScanInLineBothDirections(const Grid& grid,
-                                                          Pos pos, Vec dir) {
-    logging::debug("Scanning in line {}{} neighbours", char(pos.x + 'a'),
-                   pos.y + 1);
+static inline std::optional<Pos> ScanInLineBothDirections(const Grid& grid, Pos pos, Vec dir) {
+    logging::debug("Scanning in line {}{} neighbours", char(pos.x + 'a'), pos.y + 1);
     // scan forward and backwards
     for (auto d : {
              dir, {-dir.x, -dir.y}
@@ -76,14 +72,6 @@ static inline std::optional<Pos> ScanInLineBothDirections(const Grid& grid,
 
 
 std::optional<Pos> SearchPossible(const Grid& grid, Pos pos) {
-    // vectors of pos neighbours
-    static constexpr auto NeighbourVectors = std::to_array<Vec>({
-        {-1,  0}, // top
-        { 1,  0}, // bottom
-        { 0, -1}, // left
-        { 0,  1}, // right
-    });
-
     // if the position is not a hit then no predictions can be made
     // no ship, no prediction
     if (grid[pos.x][pos.y] != GridSquare::Hit) return std::nullopt;
@@ -101,8 +89,7 @@ std::optional<Pos> SearchPossible(const Grid& grid, Pos pos) {
         // chceck for any possible attacks in the direction of the ship
         // (whe know the orientation of the ship)
         if (square == GridSquare::Hit) {
-            if (auto d = ScanInLineBothDirections(grid, pos, vec))
-                return d.value();
+            if (auto d = ScanInLineBothDirections(grid, pos, vec)) return d.value();
         }
 
         // check for possible attacks
@@ -172,6 +159,7 @@ static inline nlohmann::json GridToJson(const Grid& grid) {
         jgrid.push_back(row);
     }
 
+    logging::debug(jgrid.dump());
     return jgrid;
 }
 
@@ -180,12 +168,11 @@ Pos AIEnemy::MakeTurnImpl(const Grid& grid) {
     try {
         httplib::Client client("http://localhost:11434");
 
-        std::string prompt
-            = "You are playing battleship game. With the given table make the "
-              "best possible move, the table contains values like \".\" (empty "
-              "posible to attack), \"M\" (already attacked - missed), \"H\" "
-              "(already attacked hit), these values represent points. You can "
-              "only attack empty points. The given table is in json format: ";
+        std::string prompt = "You are playing battleship game. With the given table make the "
+                             "best possible move, the table contains values like \".\" (empty "
+                             "posible to attack), \"M\" (already attacked - missed), \"H\" "
+                             "(already attacked hit), these values represent points. You can "
+                             "only attack empty points. The given table is in json format: ";
         prompt += GridToJson(grid).dump();
 
         nlohmann::json req = {
