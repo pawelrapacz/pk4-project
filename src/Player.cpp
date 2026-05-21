@@ -22,7 +22,7 @@ Grid Player::RemoveShips(const Grid& grid) noexcept {
 Player::Player()
     : Player(PlayerBuilder::BuildRandom()) { }
 
-Player::Player(Grid grid, ShipDataGrid shipData)
+Player::Player(Grid grid, ShipDataGrid&& shipData)
     : _grid(std::move(grid)), _shipData(std::move(shipData)) { }
 
 Player::AttackResult Player::Attack(std::size_t x, std::size_t y) noexcept {

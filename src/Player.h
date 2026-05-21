@@ -93,7 +93,7 @@ namespace Battleships {
       private:
         static void InsertShipMargin(Grid&, const ShipData&) noexcept;
 
-        Player(Grid, ShipDataGrid); // for PlayerBuilder
+        Player(Grid, ShipDataGrid&&); // for PlayerBuilder
 
         ShipData& GetShip(std::size_t x, std::size_t y);
         const ShipData& GetShip(std::size_t x, std::size_t y) const;

@@ -24,7 +24,7 @@ namespace Battleships {
         void RemoveShip(Pos);
         const Grid& GetGrid() const noexcept;
         bool Ready() const noexcept;
-        Player Build() const;
+        Player Build();
 
       private:
         using ShipData     = Player::ShipData;
@@ -32,6 +32,7 @@ namespace Battleships {
 
       private:
         static ShipData CreateShip(Pos, ShipSize, ShipOrientation) noexcept;
+        static ShipData FindShip(const Grid& grid, Pos pos);
         static Grid RemoveMargins(const Grid&) noexcept;
 
         bool TryInsertShip(Pos, ShipSize, ShipOrientation);

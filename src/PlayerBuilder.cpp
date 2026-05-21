@@ -18,63 +18,16 @@ using namespace Battleships;
 // global random
 thread_local std::mt19937 mt(std::random_device {}());
 
+
+static inline bool IsShipOrHit(GridSquare s) noexcept {
+    return s == GridSquare::Hit || s == GridSquare::Ship;
+}
+
 Player PlayerBuilder::BuildRandom() {
     static PlayerBuilder bld;
     logging::info("Building random player");
     bld.GenerateRandomGrid();
     return bld.Build();
-}
-
-struct FindShipResult {
-    Pos pos;
-    ShipSize size;
-    PlayerBuilder::ShipOrientation ort;
-};
-
-static FindShipResult FindShip(const Grid& grid, Pos pos) {
-    using PlayerBuilder::ShipOrientation::Horizontal;
-    using PlayerBuilder::ShipOrientation::Vertical;
-
-    FindShipResult res {
-        .pos  = pos,
-        .size = 0,
-        .ort  = Horizontal // does not matter
-    };
-
-    int direction = 1;
-
-    Pos currp;                                  // current position
-    for (auto vec : NeighbourVectors) {
-        currp = {pos.x + vec.x, pos.y + vec.y}; // current position
-        if (InBounds(currp)
-            && (grid[currp.x][currp.y] == GridSquare::Hit
-                || grid[currp.x][currp.y] == GridSquare::Ship)) {
-            logging::debug("Found GridSquare pos:{}{}", char(currp.x + 'a'), currp.y);
-            if (pos.x == currp.x) {
-                res.ort   = Vertical;
-                direction = vec.y;
-            } else {
-                res.ort   = Horizontal;
-                direction = vec.x;
-            }
-            break;
-        }
-    }
-
-    currp = pos;
-    while (InBounds(currp)
-           && (grid[currp.x][currp.y] == GridSquare::Hit
-               || grid[currp.x][currp.y] == GridSquare::Ship)) {
-        if (res.ort == Horizontal)
-            currp.x += direction;
-        else // Vertical
-            currp.y += direction;
-        res.size++;
-    }
-
-    logging::debug("FindShipResult: pos:{}{}, size:{}, ort:{}", char(res.pos.x + 'a'), res.pos.y,
-                   res.size, res.ort == Horizontal ? "H" : "V");
-    return res;
 }
 
 std::optional<Player> PlayerBuilder::BuildFromGrid(const Grid& grid) {
@@ -83,19 +36,25 @@ std::optional<Player> PlayerBuilder::BuildFromGrid(const Grid& grid) {
 
     for (std::size_t i {}; i < GRID_SIZE; i++) {
         for (std::size_t j {}; j < GRID_SIZE; j++) {
-            if (bld._shipData[i][j] == nullptr
-                && (grid[i][j] == GridSquare::Hit || grid[i][j] == GridSquare::Ship)) {
-                auto ship = FindShip(grid, {i, j});
-                if (not bld.TryInsertShip(ship.pos, ship.size, ship.ort)) {
-                    logging::warn("Ship insertion not possible, failed to Build Player from Grid.");
-                    return std::nullopt;
-                }
+            if (bld._shipData[i][j] || !IsShipOrHit(grid[i][j])) continue;
+
+            auto ship = FindShip(grid, {i, j});
+
+            if (bld.ValidateShipPlacement(ship)) {
+                bld.InsertShip(ship);
+                bld.InsertShipMargin(ship);
+                logging::info("Successfully inserted a ship");
+            } else {
+                logging::warn("Ship insertion from grid unsuccessful.");
+                return std::nullopt;
             }
         }
     }
 
     if (bld.Ready()) {
-        return {bld.Build()};
+        bld._grid = grid;
+        // no need to clear because bld is destroyed immediately
+        return Player(bld._grid, std::move(bld._shipData));
     } else {
         logging::warn("Lacking ships, failed to Build Player from Grid.");
         return std::nullopt;
@@ -140,7 +99,17 @@ bool PlayerBuilder::TryInsertShip(Pos start, ShipOrientation ort) {
         return false;
     }
 
-    return TryInsertShip(start, size.value(), ort);
+    auto ship = CreateShip(start, size.value(), ort);
+
+    if (ValidateShipPlacement(ship)) {
+        InsertShip(ship);
+        InsertShipMargin(ship);
+        logging::info("Successfully inserted a ship.");
+        return true;
+    } else {
+        logging::info("Insert unsuccessful.");
+        return false;
+    }
 }
 
 void PlayerBuilder::RemoveShip(Pos pos) {
@@ -176,14 +145,17 @@ bool PlayerBuilder::Ready() const noexcept {
     return true;
 }
 
-Player PlayerBuilder::Build() const {
+Player PlayerBuilder::Build() {
     logging::info("Building player.");
     if (!Ready()) {
         logging::error("Player not ready for build.");
         throw std::runtime_error("Player not ready for build.");
     }
 
-    return {RemoveMargins(_grid), _shipData};
+    Player plr {RemoveMargins(_grid), std::move(_shipData)};
+    Clear(); // clear to keep data consistency - _shipData moved
+
+    return plr;
 }
 
 
@@ -207,6 +179,45 @@ PlayerBuilder::ShipData PlayerBuilder::CreateShip(Pos start, ShipSize size,
     return {size, start, end};
 }
 
+PlayerBuilder::ShipData PlayerBuilder::FindShip(const Grid& grid, Pos pos) {
+    using ShipOrientation::Horizontal;
+    using ShipOrientation::Vertical;
+    logging::debug("FindShip is searching at position: {}{}", char(pos.x + 'a'), pos.y);
+
+    ShipOrientation ort {};
+    ShipData ship {0, pos, pos, 0};
+
+    for (auto vec : NeighbourVectors) {
+        Pos currp = {pos.x + vec.x, pos.y + vec.y}; // current position
+        if (InBounds(currp) && IsShipOrHit(grid[currp.x][currp.y])) {
+            logging::debug("Found GridSquare pos:{}{}", char(currp.x + 'a'), currp.y);
+
+            ort = pos.x == currp.x ? Vertical : Horizontal;
+            break;
+        }
+    }
+
+    while (InBounds(ship.end) && IsShipOrHit(grid[ship.end.x][ship.end.y])) {
+        ship.size++;
+
+        if (grid[ship.end.x][ship.end.y] == GridSquare::Ship) ship.remainingSize++;
+
+        if (ort == Horizontal)
+            ship.end.x++;
+        else // Vertical
+            ship.end.y++;
+    }
+
+    if (ort == Horizontal)
+        ship.end.y += 1;
+    else
+        ship.end.x += 1;
+
+    logging::debug("FindShip found ship pos:{}{}, size:{}, ort:{}", char(pos.x + 'a'), pos.y,
+                   ship.size, ort == Horizontal ? "H" : "V");
+    return ship;
+}
+
 Grid PlayerBuilder::RemoveMargins(const Grid& grid) noexcept {
     Grid out = grid;
     // erase GridSquare::Missed (margins for insertion)
@@ -215,20 +226,6 @@ Grid PlayerBuilder::RemoveMargins(const Grid& grid) noexcept {
             if (out[i][j] != GridSquare::Ship) out[i][j] = GridSquare::None;
 
     return out;
-}
-
-bool PlayerBuilder::TryInsertShip(Pos start, ShipSize size, ShipOrientation ort) {
-    auto ship = CreateShip(start, size, ort);
-
-    if (ValidateShipPlacement(ship)) {
-        InsertShip(ship);
-        InsertShipMargin(ship);
-        logging::info("Successfully inserted a ship.");
-        return true;
-    } else {
-        logging::info("Insert unsuccessful.");
-        return false;
-    }
 }
 
 void PlayerBuilder::RandomInsertShip(const ShipSize size) {
