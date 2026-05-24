@@ -16,20 +16,23 @@ MainMenu::MainMenu(Application& app)
       _quickBtn({(WINDOW_WIDTH - 300) / 2.f, 200, 300, 70}, "Quick Game"),
       _quickAIBtn({(WINDOW_WIDTH - 300) / 2.f, 290, 300, 70},
                   "Quick Game (AI)"),
-      _newBtn({(WINDOW_WIDTH - 300) / 2.f, 380, 300, 70}, "New Game"),
-      _quitBtn({(WINDOW_WIDTH - 300) / 2.f, 470, 300, 70}, "Quit") {
+      _resumeBtn({(WINDOW_WIDTH - 300) / 2.f, 380, 300, 70}, "Resume last"),
+      _newBtn({(WINDOW_WIDTH - 300) / 2.f, 470, 300, 70}, "New Game")
+      /* _quitBtn({(WINDOW_WIDTH - 300) / 2.f, 456, 300, 70}, "Quit") */ {
     logging::info("Initializing MainMenu");
     _quickBtn.SetCallback([this]() { this->_app.StartNewGame<SimpleEnemy>(); });
     _quickAIBtn.SetCallback([this]() { this->_app.StartNewGame<AIEnemy>(); });
+    _resumeBtn.SetCallback([this]() { this->_app.ResumeLastGame(); });
     _newBtn.SetCallback([this]() { this->_app.SetMenu<PlayerBuilderMenu>(); });
-    _quitBtn.SetCallback([this]() { this->_app.state.running = false; });
+    // _quitBtn.SetCallback([this]() { this->_app.state.running = false; });
 }
 
 void MainMenu::OnUpdate() {
     _quickBtn.OnUpdate();
     _quickAIBtn.OnUpdate();
+    _resumeBtn.OnUpdate();
     _newBtn.OnUpdate();
-    _quitBtn.OnUpdate();
+    // _quitBtn.OnUpdate();
 }
 
 void MainMenu::Draw() const noexcept {
@@ -41,6 +44,7 @@ void MainMenu::Draw() const noexcept {
 
     _quickBtn.Draw();
     _quickAIBtn.Draw();
+    _resumeBtn.Draw();
     _newBtn.Draw();
-    _quitBtn.Draw();
+    // _quitBtn.Draw();
 }

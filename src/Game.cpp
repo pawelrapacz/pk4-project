@@ -16,12 +16,13 @@
 
 using namespace Battleships;
 
-Game::Game(Application& app, std::unique_ptr<Enemy>&& enm, Player&& plr)
+Game::Game(Application& app, std::unique_ptr<Enemy>&& enm, Player&& plr, std::uint32_t turn)
     : _app(app),
       _pghnd(50, 50, "Your fleet"),
       _eghnd(600, 50, "Enemy fleet"),
       _plr(std::move(plr)),
-      _enm(std::move(enm)) {
+      _enm(std::move(enm)),
+      _turn(turn) {
     logging::info("Initializing Game");
 }
 
@@ -65,6 +66,7 @@ void Game::Draw() const {
 
 std::unique_ptr<Enemy> Game::ReleaseEnemy() { return std::move(_enm); }
 
+bool Game::Playing() const noexcept { return _playing; }
 std::uint32_t Game::GetTurn() const noexcept { return _turn; }
 const Player& Game::GetPlayer() const noexcept { return _plr; }
 const Enemy& Game::GetEnemy() const noexcept { return *_enm; }

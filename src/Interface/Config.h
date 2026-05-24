@@ -5,6 +5,8 @@
 namespace Battleships {
     constexpr auto TITLE = "Battleships";
 
+    constexpr auto SAVE_FILE = "GameData.json";
+
     constexpr int WINDOW_WIDTH  = 1100;
     constexpr int WINDOW_HEIGHT = 600;
 

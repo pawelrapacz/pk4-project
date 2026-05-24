@@ -2,6 +2,7 @@
 
 #include "Enemy.h"
 #include "Game.h"
+#include "Serialization.h"
 #include "Interface/Config.h"
 #include "Interface/MainMenu.h"
 
@@ -14,6 +15,7 @@
 #endif
 
 #include <exception>
+#include <filesystem>
 #include <memory>
 
 using namespace Battleships;
@@ -62,6 +64,8 @@ void Application::Run() {
         while (!WindowShouldClose() && state.running)
             Loop();
 
+        OnExit();
+
     } catch (const std::exception& e) {
         logging::fatal("Unexpected error occured: what(): {}", e.what());
     } catch (...) {
@@ -109,6 +113,11 @@ void Application::Draw() const noexcept {
     EndDrawing();
 }
 
+void Application::OnExit() {
+    if (_game && _game->Playing())
+        SerializeGame(SAVE_FILE, *_game);
+}
+
 void Application::RestartGame() {
     logging::info("Restarting game");
     auto enemy = _game->ReleaseEnemy();
@@ -127,4 +136,17 @@ void Application::RestartGame() {
 void Application::EndGame() noexcept {
     logging::info("Ending Game");
     _game.reset();
+}
+
+void Application::ResumeLastGame() {
+    logging::info("Trying to resume last game.");
+
+    if (auto gameData = DeserializeGame(SAVE_FILE)) {
+        _game = std::make_unique<Game>(*this, std::move(gameData->enemy), std::move(gameData->player), gameData->turn);
+        state.showMenu = false;
+        std::filesystem::remove(SAVE_FILE);
+        logging::info("Successfully loaded last game.");
+    } else {
+        logging::warn("Failed to load last game.");
+    }
 }

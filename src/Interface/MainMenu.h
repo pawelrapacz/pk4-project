@@ -12,7 +12,8 @@ namespace Battleships {
       private:
         Button _quickBtn;
         Button _quickAIBtn;
+        Button _resumeBtn;
         Button _newBtn;
-        Button _quitBtn;
+        // Button _quitBtn;
     };
 } // namespace Battleships

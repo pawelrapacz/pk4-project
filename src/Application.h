@@ -26,6 +26,8 @@ namespace Battleships {
         void RestartGame();
         void EndGame() noexcept;
 
+        void ResumeLastGame();
+
         template<typename Tp>
             requires std::derived_from<Tp, Enemy> && std::default_initializable<Tp>
         void StartNewGame(Player plr = {}) {
@@ -48,6 +50,7 @@ namespace Battleships {
         void Loop();
         void OnUpdate();
         void Draw() const noexcept;
+        void OnExit();
 
       private:
         std::unique_ptr<Game> _game;
