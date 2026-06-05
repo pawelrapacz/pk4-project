@@ -140,11 +140,28 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
 
 # download gemma4:e2b
 set(MODELS_DIR ${CMAKE_BINARY_DIR}/models)
-message("downloading ai model: gemma-4-E2B-it-Q8_0.gguf")
-file(
-    DOWNLOAD
-    https://huggingface.co/ggml-org/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q8_0.gguf
-    ${MODELS_DIR}/gemma-4-E2B-it-Q8_0.gguf
-    SHOW_PROGRESS
-    EXPECTED_HASH SHA256=e049411c01fb7a81161768c52e38828970e55a64e22738957adcbe51d20f1c8e
-)
+
+set(MODELS_GEMMA gemma-4-E2B-it-Q8_0.gguf)
+set(MODELS_GEMMA_HASH e049411c01fb7a81161768c52e38828970e55a64e22738957adcbe51d20f1c8e)
+set(MODELS_GEMMA_COMPUTED_HASH "")
+
+if (IS_READABLE ${MODELS_DIR}/${MODELS_GEMMA})
+    message(STATUS "found ia model ${MODELS_GEMMA}")
+    message(STATUS "evaluating ${MODELS_GEMMA} hash")
+    file(SHA256 ${MODELS_DIR}/${MODELS_GEMMA} MODELS_GEMMA_COMPUTED_HASH)
+else()
+    message(STATUS "ai model ${MODELS_GEMMA} not found")
+endif()
+
+if (MODELS_GEMMA_HASH STREQUAL MODELS_GEMMA_COMPUTED_HASH)
+    message(STATUS "${MODELS_GEMMA} hash correct")
+else()
+    message(STATUS "downloading ai model: ${MODELS_GEMMA}")
+    file(
+        DOWNLOAD
+        https://huggingface.co/ggml-org/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q8_0.gguf
+        ${MODELS_DIR}/${MODELS_GEMMA}
+        SHOW_PROGRESS
+        EXPECTED_HASH SHA256=${MODELS_GEMMA_HASH}
+    )
+endif()
