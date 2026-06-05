@@ -119,12 +119,17 @@ static inline std::optional<Player> MakePlayer(const ordered_json& json) {
 
 static inline std::unique_ptr<Enemy> MakeEnemy(const std::string& enemyType,
                                                const ordered_json& json) {
+    static const std::regex pattern {R"(^(SimpleEnemy)|(AIEnemy)$)",
+                                     std::regex_constants::ECMAScript
+                                         | std::regex_constants::icase};
     std::unique_ptr<Enemy> enemy;
 
     if (auto plrOpt = MakePlayer(json)) {
-        if (enemyType == "SimpleEnemy")
+        std::smatch match;
+        std::regex_match(enemyType, match, pattern);
+        if (match[1].matched)
             enemy = std::make_unique<SimpleEnemy>(std::move(plrOpt.value()));
-        else if (enemyType == "AIEnemy")
+        else if (match[2].matched)
             enemy = std::make_unique<AIEnemy>(std::move(plrOpt.value()));
         else
             logging::warn("Json field \"enemyType\" has an invalid value.");
